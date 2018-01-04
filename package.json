@@ -1,12 +1,10 @@
 {
   "name": "awsudo",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "A simple utility for executing cli commands with an assumed role.",
-  "main": "bin/awsudo",
-  "directories": {
-    "bin": "bin"
+  "bin": {
+      "awsudo": "bin/awsudo"
   },
-  "bin": "bin/awsudo",
   "scripts": {
     "test": "echo \"no test specified\" && exit 0"
   },
@@ -30,7 +28,7 @@
     "bash"
   ],
   "author": {
-      "name": "AWS sudo open Source at Meltwater",
+      "name": "AWS sudo open source at Meltwater",
       "email": "awsudo.opensource@meltwater.com"
   },
   "license": "MIT",
