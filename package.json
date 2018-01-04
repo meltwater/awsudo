@@ -1,0 +1,44 @@
+{
+  "name": "awsudo",
+  "version": "0.0.0",
+  "description": "A simple utility for executing cli commands with an assumed role.",
+  "bin": {
+    "awsudo": "bin/awsudo"
+  },
+  "scripts": {
+    "preversion": "npm test",
+    "test": "npm outdated && nsp check",
+    "postversion": "git push --follow-tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meltwater/awsudo.git"
+  },
+  "keywords": [
+    "aws",
+    "awscli",
+    "sudo",
+    "sts",
+    "assume",
+    "assumerole",
+    "stsassume",
+    "stsassumerole",
+    "role",
+    "rolearn",
+    "arn",
+    "cli",
+    "bash"
+  ],
+  "author": {
+    "name": "AWS sudo open source at Meltwater",
+    "email": "awsudo.opensource@meltwater.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/meltwater/awsudo/issues"
+  },
+  "homepage": "https://github.com/meltwater/awsudo#readme",
+  "devDependencies": {
+    "nsp": "^3.1.0"
+  }
+}
