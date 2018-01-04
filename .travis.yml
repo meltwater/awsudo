@@ -18,5 +18,6 @@ deploy:
   email: "awsudo.opensource@meltwater.com"
   api_key: "${NPM_DEPLOY_TOKEN}"
   on:
-    branch: master
     tags: true
+    only:
+      - /^v\d+\.\d+\.\d+$/
