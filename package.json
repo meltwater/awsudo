@@ -6,6 +6,7 @@
   "directories": {
     "bin": "bin"
   },
+  "bin": "bin/awsudo",
   "scripts": {
     "test": "echo \"no test specified\" && exit 0"
   },
