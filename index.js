@@ -1,0 +1,1 @@
+throw new Error('This is not a "requirable" module.  It adds the awsudo command to the path. Please see README');
