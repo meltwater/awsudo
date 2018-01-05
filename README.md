@@ -1,11 +1,11 @@
 # awsudo
+[![Build Status](https://travis-ci.org/meltwater/awsudo.svg?branch=master)](https://travis-ci.org/meltwater/awsudo)
+
 A simple utility for executing cli commands with an assumed role.
 
 ## Install
 
-```
-npm install awsudo
-```
+[![NPM](https://nodei.co/npm/awsudo.png)](https://nodei.co/npm/awsudo/after.png?downloads=true&downloadRank=true&stars=true)
 
 ## Usage
 
