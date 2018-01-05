@@ -22,7 +22,7 @@ awsudo arn:aws:iam::123456789012:role/S3Access aws s3 cp ./some/directory s3://s
 ## Prerequisites
 
 * This is a bash based package and must therefore be run in a bash environment
-* jq must be available in the bash environment. (Install info)[https://stedolan.github.io/jq/]
+* jq must be available in the bash environment. [Install info](https://stedolan.github.io/jq/)
 * The [awscli](https://aws.amazon.com/cli/) must be available on the system.
 * The awscli must be [configured](https://docs.aws.amazon.com/cli/latest/reference/configure/index.html) OR appropriate [environment variables are set](https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html)
 
