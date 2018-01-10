@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # DEPENDENCIES:
 #  - awscli
-#  - jq
 
 set -e # Exit on any child process error
 
@@ -20,9 +19,9 @@ CREDENTIALS=`aws sts assume-role --role-arn ${ROLE_ARN} --role-session-name Role
 
 # Set AWS Assumed Role Credentials on ENV
 export AWS_DEFAULT_REGION=eu-west-1
-export AWS_ACCESS_KEY_ID=`echo ${CREDENTIALS} | jq -r '.Credentials.AccessKeyId'`
-export AWS_SECRET_ACCESS_KEY=`echo ${CREDENTIALS} | jq -r '.Credentials.SecretAccessKey'`
-export AWS_SESSION_TOKEN=`echo ${CREDENTIALS} | jq -r '.Credentials.SessionToken'`
-export AWS_EXPIRATION=`echo ${CREDENTIALS} | jq -r '.Credentials.Expiration'`
+export AWS_ACCESS_KEY_ID=`echo ${CREDENTIALS} | json Credentials.AccessKeyId`
+export AWS_SECRET_ACCESS_KEY=`echo ${CREDENTIALS} | json .Credentials.SecretAccessKey`
+export AWS_SESSION_TOKEN=`echo ${CREDENTIALS} | json Credentials.SessionToken`
+export AWS_EXPIRATION=`echo ${CREDENTIALS} | json Credentials.Expiration`
 
 eval $@
