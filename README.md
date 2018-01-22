@@ -1,7 +1,9 @@
 # awsudo
 [![Build Status](https://travis-ci.org/meltwater/awsudo.svg?branch=master)](https://travis-ci.org/meltwater/awsudo)
 
-A simple utility for executing cli commands with an assumed role.
+A simple utility for executing cli commands with an assumed role. 
+
+For more information about the motiviation behind developing this utility, please read our blog post [Assuming roles in AWS with sudo-like agility](http://underthehood.meltwater.com/blog/2018/01/22/assuming-roles-in-aws-with-sudo-like-agility/).
 
 ## Install
 
