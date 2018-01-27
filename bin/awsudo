@@ -12,12 +12,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-JSON_LIB_PATH=${DIR/%\/bin//}
 # END RESOLVE SCRIPT PATH
-
-# ADD JSON TO PATH
-PATH=$PATH:${JSON_LIB_PATH}/node_modules/json/lib
-# END ADD JSON TO PATH
 
 ROLE_ARN=$1
 shift
@@ -33,9 +28,9 @@ fi
 CREDENTIALS=`aws sts assume-role --role-arn ${ROLE_ARN} --role-session-name RoleSession --duration-seconds 900 --output=json`
 
 # Set AWS Assumed Role Credentials on ENV
-export AWS_ACCESS_KEY_ID=`echo "${CREDENTIALS}" | json.js Credentials.AccessKeyId`
-export AWS_SECRET_ACCESS_KEY=`echo "${CREDENTIALS}" | json.js Credentials.SecretAccessKey`
-export AWS_SESSION_TOKEN=`echo "${CREDENTIALS}" | json.js Credentials.SessionToken`
-export AWS_EXPIRATION=`echo "${CREDENTIALS}" | json.js Credentials.Expiration`
+export AWS_ACCESS_KEY_ID=`echo "${CREDENTIALS}" | json Credentials.AccessKeyId`
+export AWS_SECRET_ACCESS_KEY=`echo "${CREDENTIALS}" | json Credentials.SecretAccessKey`
+export AWS_SESSION_TOKEN=`echo "${CREDENTIALS}" | json Credentials.SessionToken`
+export AWS_EXPIRATION=`echo "${CREDENTIALS}" | json Credentials.Expiration`
 
 eval $@
