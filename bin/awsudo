@@ -4,21 +4,6 @@
 
 set -e # Exit on any child process error
 
-# RESOLVE THE SCRIPT PATH
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
-done
-DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-JSON_LIB_PATH=${DIR/%\/bin//}
-# END RESOLVE SCRIPT PATH
-
-# ADD JSON TO PATH
-PATH=$PATH:${JSON_LIB_PATH}/node_modules/json/lib
-# END ADD JSON TO PATH
-
 ROLE_ARN=$1
 shift
 
@@ -30,12 +15,19 @@ else
 fi
 
 # Assume role for running cloud formation
-CREDENTIALS=`aws sts assume-role --role-arn ${ROLE_ARN} --role-session-name RoleSession --duration-seconds 900 --output=json`
+export CREDENTIALS=`aws sts assume-role --role-arn ${ROLE_ARN} --role-session-name RoleSession --duration-seconds 900 --output=json`
+
+echo "CREDENTIALS:$CREDENTIALS"
 
 # Set AWS Assumed Role Credentials on ENV
-export AWS_ACCESS_KEY_ID=`echo "${CREDENTIALS}" | json.js Credentials.AccessKeyId`
-export AWS_SECRET_ACCESS_KEY=`echo "${CREDENTIALS}" | json.js Credentials.SecretAccessKey`
-export AWS_SESSION_TOKEN=`echo "${CREDENTIALS}" | json.js Credentials.SessionToken`
-export AWS_EXPIRATION=`echo "${CREDENTIALS}" | json.js Credentials.Expiration`
+export AWS_ACCESS_KEY_ID=`node -p "JSON.parse(process.env.CREDENTIALS).Credentials.AccessKeyId"`
+export AWS_SECRET_ACCESS_KEY=`node -p "JSON.parse(process.env.CREDENTIALS).Credentials.SecretAccessKey"`
+export AWS_SESSION_TOKEN=`node -p "JSON.parse(process.env.CREDENTIALS).Credentials.SessionToken"`
+export AWS_EXPIRATION=`node -p "JSON.parse(process.env.CREDENTIALS).Credentials.Expiration"`
+
+echo "AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID"
+echo "AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY"
+echo "AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN"
+echo "AWS_EXPIRATION: $AWS_EXPIRATION"
 
 eval $@
