@@ -17,6 +17,12 @@ fi
 # Assume role for running cloud formation
 export CREDENTIALS=`aws sts assume-role --role-arn ${ROLE_ARN} --role-session-name RoleSession --duration-seconds 900 --output=json`
 
+# Report and exit if there is an error with role credentials
+if [ "Invalid" = `node -p "try { JSON.parse(process.env.CREDENTIALs); } catch (error) { console.log('Invalid'); }"` ]; then
+    echo "Invalid credentials. Returned value: ${CREDENTIALS}"
+    exit 1
+fi
+
 # Set AWS Assumed Role Credentials on ENV
 export AWS_ACCESS_KEY_ID=`node -p "JSON.parse(process.env.CREDENTIALS).Credentials.AccessKeyId"`
 export AWS_SECRET_ACCESS_KEY=`node -p "JSON.parse(process.env.CREDENTIALS).Credentials.SecretAccessKey"`
