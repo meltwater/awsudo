@@ -18,7 +18,7 @@ fi
 export CREDENTIALS=`aws sts assume-role --role-arn ${ROLE_ARN} --role-session-name RoleSession --duration-seconds 900 --output=json`
 
 # Report and exit if there is an error with role credentials
-if [ "Invalid" = `node -p "try { JSON.parse(process.env.CREDENTIALs); } catch (error) { console.log('Invalid'); }"` ]; then
+if [[ "Invalid" = `node -e "try { JSON.parse(process.env.CREDENTIALs); } catch (error) { console.log('Invalid'); }"` ]]; then
     echo "Invalid credentials. Returned value: ${CREDENTIALS}"
     exit 1
 fi
