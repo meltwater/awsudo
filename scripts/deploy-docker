@@ -4,7 +4,7 @@ set -e # Exit on any child process error
 echo "Deploying: awsudo/awsudo:${DOCKER_TAG}"
 
 echo "Logging in"
-docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+docker login -u ${DOCKER_USERNAME} -p "${DOCKER_PASSWORD}"
 echo "Building..."
 docker build . -t awsudo/awsudo:latest -t awsudo/awsudo:${DOCKER_TAG}
 echo "Push awsudo/awsudo:latest"
