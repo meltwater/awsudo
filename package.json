@@ -6,10 +6,11 @@
     "awsudo": "bin/awsudo"
   },
   "scripts": {
+    "deploy-docker": "scripts/deploy-docker",
+    "postversion": "git push --follow-tags",
     "preversion": "npm test",
     "start": "bin/awsudo",
-    "test": "npm outdated && nsp check",
-    "postversion": "git push --follow-tags"
+    "test": "npm outdated && nsp check"
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,8 @@
 #!/bin/bash
 
+echo "Deploying: awsudo/awsudo:${DOCKER_TAG}"
+
 docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
-docker build . -t awsudo/awsudo:latest -t awsudo/awsudo:${TRAVIS_TAG}
+docker build . -t awsudo/awsudo:latest -t awsudo/awsudo:${DOCKER_TAG}
 docker push awsudo/awsudo:latest
-docker push awsudo/awsudo:${TRAVIS_TAG}
+docker push awsudo/awsudo:${DOCKER_TAG}
