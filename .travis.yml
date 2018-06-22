@@ -1,4 +1,8 @@
-sudo: false
+sudo: required
+
+services:
+  - docker
+
 language: node_js
 cache:
   directories:
