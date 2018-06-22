@@ -22,11 +22,7 @@ deploy:
     only:
       - /^v\d+\.\d+\.\d+$/
   provider: script
-  script:
-    - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
-    - docker build . -t awsudo/awsudo:latest -t awsudo/awsudo:${TRAVIS_BRANCH}
-    - docker push awsudo/awsudo:latest
-    - docker push awsudo/awsudo:${TRAVIS_BRANCH}
+  script: scripts/deploy-docker
   on:
     tags: true
     only:
