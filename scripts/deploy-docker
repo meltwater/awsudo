@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e # Exit on any child process error
 
 echo "Deploying: awsudo/awsudo:${DOCKER_TAG}"
 
