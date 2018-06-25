@@ -23,13 +23,13 @@ npm install -g awsudo
 #### Node
 
 awsudo can also be installed for use by specific Node.js projects (i.e. as part
-of a CI/CD build process), by adding it as a dependency like any other:
+of a CI/CD build process) by adding it as a dependency like any other:
 
 ```bash
 npm install --save-dev awsudo
 ```
 
-From there, npm will place it in the execution PATH for any scripts defined in
+npm will place it in the execution PATH for any scripts defined in
 it package.json that it runs (e.g. start, test).
 
 #### Docker
