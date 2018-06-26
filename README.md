@@ -55,10 +55,42 @@ interactively:
 docker run -it -v ~/.aws:/root/.aws awsudo/awsudo awsudo /bin/bash
 ```
 
-### Example usage
+### Example usages
+
+#### Command
+
+Basic usage when awsudo is on the PATH:
 
 ```bash
 awsudo arn:aws:iam::123456789012:role/S3Access aws s3 cp ./some/directory s3://some-bucket
+```
+
+when using with Docker as a comment (i.e. not within the container):
+
+```bash
+docker run -v ~/.aws:/root/.aws awsudo/awsudo awsudo arn:aws:iam::123456789012:role/S3Access aws s3 cp ./some/directory s3://some-bucket
+```
+
+#### Docker-based CI/CD
+
+The Docker image can also be used with CI/CD tools like [Drone](https://drone.io)
+or [CircleCI](https://circleci.com/).
+
+Here is an example **Drone** pipeline step which uses the awsudo Docker image to
+deploy into AWS:
+
+```yaml
+  deploy:
+    image: awsudo/awsudo:latest
+    commands:
+      # Copy build artifacts to publicly-readable S3 bucket
+      - awsudo arn:aws:iam::${AWS_ACCOUNT_ID}:role/S3Access aws s3 cp ./build s3://some-bucket --acl public-read --recursive
+    environment:
+      - AWS_DEFAULT_REGION=us-east-1
+    secrets:
+      - aws_access_key_id
+      - aws_account_id
+      - aws_secret_access_key
 ```
 
 ## Prerequisites
