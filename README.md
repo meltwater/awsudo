@@ -65,7 +65,7 @@ Basic usage when awsudo is on the PATH:
 awsudo arn:aws:iam::123456789012:role/S3Access aws s3 cp ./some/directory s3://some-bucket
 ```
 
-when using with Docker as a comment (i.e. not within the container):
+when using with Docker as a command (i.e. not within the container):
 
 ```bash
 docker run -v ~/.aws:/root/.aws awsudo/awsudo awsudo arn:aws:iam::123456789012:role/S3Access aws s3 cp ./some/directory s3://some-bucket
