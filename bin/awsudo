@@ -4,24 +4,35 @@
 
 set -e # Exit on any child process error
 
-USAGE="awsudo git [-h|--help] [-v|--verbose] <role-arn> <sub command>"
 VERBOSE=false
 POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
 key="$1"
 case $key in
+    # IMPORTANT: We MUST skip options that are not at the very beginning of the command.
+    # Otherwise we could be stripping options being sent to the subcommand
     -h|--help)
-    echo "awsudo git [-v|--verbose] <role-arn>"
-    exit 0
+    if [ "${#POSITIONAL[@]}" = 0 ]; then
+        echo "awsudo [-h|--help] [-v|--verbose] <role-arn> <sub command>"
+        exit 0
+    else
+        POSITIONAL+=("$1")
+        shift
+    fi
     ;;
     -v|--verbose)
-    VERBOSE=true
-    shift # past argument
+    if [ "${#POSITIONAL[@]}" = 0 ]; then
+        VERBOSE=true
+        shift
+    else
+        POSITIONAL+=("$1")
+        shift
+    fi
     ;;
     *)    # unknown option
-    POSITIONAL+=("$1") # save it in an array for later
-    shift # past argument
+    POSITIONAL+=("$1")
+    shift
     ;;
 esac
 done
