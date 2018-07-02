@@ -4,11 +4,47 @@
 
 set -e # Exit on any child process error
 
+VERBOSE=false
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+case $key in
+    # IMPORTANT: We MUST skip options that are not at the very beginning of the command.
+    # Otherwise we could be stripping options being sent to the subcommand
+    -h|--help)
+    if [ "${#POSITIONAL[@]}" = 0 ]; then
+        echo "awsudo [-h|--help] [-v|--verbose] <role-arn> <sub command>"
+        exit 0
+    else
+        POSITIONAL+=("$1")
+        shift
+    fi
+    ;;
+    -v|--verbose)
+    if [ "${#POSITIONAL[@]}" = 0 ]; then
+        VERBOSE=true
+        shift
+    else
+        POSITIONAL+=("$1")
+        shift
+    fi
+    ;;
+    *)    # unknown option
+    POSITIONAL+=("$1")
+    shift
+    ;;
+esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
 ROLE_ARN=$1
 shift
 
 if [[ ${ROLE_ARN} =~ ^arn:aws:iam ]]; then
-    echo "Using RoleArn: ${ROLE_ARN}"
+    if $VERBOSE; then
+        echo "Using RoleArn: ${ROLE_ARN}"
+    fi
 else
     echo "Invalid role arn provided. Provided value: ${ROLE_ARN}"
     exit 1
