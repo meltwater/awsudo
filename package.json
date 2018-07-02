@@ -1,6 +1,6 @@
 {
   "name": "awsudo",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A simple utility for executing cli commands with an assumed role.",
   "bin": {
     "awsudo": "bin/awsudo"
