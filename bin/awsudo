@@ -4,11 +4,36 @@
 
 set -e # Exit on any child process error
 
+VERBOSE=0
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    -h|--help)
+    echo "awsudo git [-v|--verbose] <role-arn>"
+    exit 0
+    ;;
+    -v|--verbose)
+    VERBOSE=1
+    shift # past argument
+    ;;
+    *)    # unknown option
+    POSITIONAL+=("$1") # save it in an array for later
+    shift # past argument
+    ;;
+esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
 ROLE_ARN=$1
 shift
 
 if [[ ${ROLE_ARN} =~ ^arn:aws:iam ]]; then
-    echo "Using RoleArn: ${ROLE_ARN}"
+    if [ $VERBOSE = 1 ]; then
+        echo "Using RoleArn: ${ROLE_ARN}"
+    fi
 else
     echo "Invalid role arn provided. Provided value: ${ROLE_ARN}"
     exit 1
@@ -18,7 +43,7 @@ fi
 export CREDENTIALS=`aws sts assume-role --role-arn ${ROLE_ARN} --role-session-name RoleSession --duration-seconds 900 --output=json`
 
 # Report and exit if there is an error with role credentials
-if [[ "Invalid" = `node -e "try { JSON.parse(process.env.CREDENTIALs); } catch (error) { console.log('Invalid'); }"` ]]; then
+if [[ "Invalid" = `node -e "try { JSON.parse(process.env.CREDENTIALS); } catch (error) { console.log('Invalid'); }"` ]]; then
     echo "Credentials are invalid."
     if [ -n "${CREDENTIALS}" ]; then
         echo "Returned value: ${CREDENTIALS}"
