@@ -1,12 +1,6 @@
 #!/bin/bash
 set -e # Exit on any child process error
 
-# Handle making sure an exact version number is installed while building the docker container
-echo "Updating dockerfile to reference specific version from npm"
-VERSION_NUMBER=$(node -p "require('./package.json').version")
-sed -i -e "s|##VERSION_NUMBER##|$VERSION_NUMBER|g" Dockerfile
-echo "Installing awsudo@$VERSION_NUMBER"
-
 echo "Deploying: awsudo/awsudo:${DOCKER_TAG}"
 
 echo "Logging in"
