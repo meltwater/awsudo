@@ -2,4 +2,4 @@ FROM meltwaterfoundation/drone-awscli:latest
 MAINTAINER awsudo opensource <awsudo.opensource@meltwater.com>
 
 RUN apk add --update nodejs
-RUN npm i -g awsudo
+RUN npm i -g awsudo@##VERSION_NUMBER##
