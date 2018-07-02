@@ -8,7 +8,7 @@ For more information about the motiviation behind developing this utility, pleas
 ## Usage
 
 ```bash
-awsudo arn:aws:iam::[AWS_ACCOUNT_ID]:role/[role name] [aws command]
+awsudo [-h|--help] [-v|--verbose] arn:aws:iam::[AWS_ACCOUNT_ID]:role/[role name] [aws command]
 ```
 
 ### Install
