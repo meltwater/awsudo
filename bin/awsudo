@@ -6,13 +6,13 @@ set -e # Exit on any child process error
 
 USAGE="awsudo git [-h|--help] [-v|--verbose] <role-arn> <sub command>"
 VERBOSE=false
+POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
 key="$1"
-
 case $key in
     -h|--help)
-    echo $USAGE
+    echo "awsudo git [-v|--verbose] <role-arn>"
     exit 0
     ;;
     -v|--verbose)
@@ -20,12 +20,12 @@ case $key in
     shift # past argument
     ;;
     *)    # unknown option
-    echo "Unknown option passed: $1"
-    echo $USAGE
-    exit 1
+    POSITIONAL+=("$1") # save it in an array for later
+    shift # past argument
     ;;
 esac
 done
+set -- "${POSITIONAL[@]}" # restore positional parameters
 
 ROLE_ARN=$1
 shift
