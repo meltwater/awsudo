@@ -4,7 +4,7 @@
 
 set -e # Exit on any child process error
 
-VERBOSE=0
+VERBOSE=false
 POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
@@ -12,11 +12,11 @@ key="$1"
 
 case $key in
     -h|--help)
-    echo "awsudo git [-v|--verbose] <role-arn>"
+    echo "awsudo git [-v|--verbose] <role-arn> <subcommand>"
     exit 0
     ;;
     -v|--verbose)
-    VERBOSE=1
+    VERBOSE=true
     shift # past argument
     ;;
     *)    # unknown option
@@ -31,7 +31,7 @@ ROLE_ARN=$1
 shift
 
 if [[ ${ROLE_ARN} =~ ^arn:aws:iam ]]; then
-    if [ $VERBOSE = 1 ]; then
+    if $VERBOSE; then
         echo "Using RoleArn: ${ROLE_ARN}"
     fi
 else
