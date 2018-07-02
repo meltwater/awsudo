@@ -25,9 +25,3 @@ deploy:
     tags: true
     only:
       - /^v\d+\.\d+\.\d+$/
-  provider: script
-  script: DOCKER_TAG=${TRAVIS_TAG} npm run deploy-docker
-  on:
-    tags: true
-    only:
-      - /^v\d+\.\d+\.\d+$/

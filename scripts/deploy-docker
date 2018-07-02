@@ -7,8 +7,8 @@ echo "Logging in"
 docker login -u ${DOCKER_USERNAME} -p "${DOCKER_PASSWORD}"
 echo "Building..."
 docker build . -t awsudo/awsudo:latest -t awsudo/awsudo:${DOCKER_TAG}
-echo "Push awsudo/awsudo:latest"
-docker push awsudo/awsudo:latest
 echo "Push awsudo/awsudo:${DOCKER_TAG}"
 docker push awsudo/awsudo:${DOCKER_TAG}
+echo "Push awsudo/awsudo:latest"
+docker push awsudo/awsudo:latest
 echo "All done!"
