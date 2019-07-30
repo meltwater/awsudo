@@ -5,21 +5,24 @@ const { execSync } = require("child_process");
 
 const argv = require("yargs")
   .parserConfiguration({
-    "halt-at-non-option": true
+    // By default, `yargs` stops parsing after `--`. This option stores unparsed arguments into argv["--"].
+    "populate--": true
   })
   .usage(
-    "$0 <arn>",
-    "awsudo [-d|--duration] [-v|--verbose] <arn> <command..>",
+    "$0 [-d|--duration] [-v|--verbose] <arn> <command..>",
+    "Assume an IAM role for the duration of a command",
     yargs => {
       yargs
         .option("d", {
           alias: "duration",
-          describe: "The duration to assume this role",
+          describe:
+            "The duration to assume this role in seconds. See https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html#API_AssumeRole_RequestParameters",
           default: 900,
           type: "number"
         })
         .option("v", {
           alias: "verbose",
+          describe: "Show debug information",
           default: false,
           type: "boolean"
         })
@@ -44,29 +47,41 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
 }
 
 (async () => {
-  var sts = new AWS.STS();
-  const data = await sts
-    .assumeRole({
-      RoleArn: argv.arn,
-      RoleSessionName: "RoleSession",
-      DurationSeconds: argv.duration
-    })
-    .promise();
-  const credentials = data.Credentials;
+  const sts = new AWS.STS();
+  let credentials;
+  try {
+    const data = await sts
+      .assumeRole({
+        RoleArn: argv.arn,
+        RoleSessionName: "RoleSession",
+        DurationSeconds: argv.duration
+      })
+      .promise();
+    credentials = data.Credentials;
+  } catch (err) {
+    console.log("Exception while assuming role:", err);
+    process.exit(1);
+  }
 
-  const command = [
+  let commandArgs = [
     ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
     ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
     ["AWS_SESSION_TOKEN", credentials.SessionToken],
     ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
   ]
     .map(arr => arr.join("="))
-    .concat(argv._)
-    .join(" ");
+    .concat(argv.command);
+  if (argv["--"]) {
+    commandArgs = commandArgs.concat("--", argv["--"]);
+  }
+  const command = commandArgs.join(" ");
 
   if (argv.verbose) {
     console.log(`Running command ${command}`);
   }
 
   execSync(command, { stdio: "inherit" });
-})();
+})().catch(err => {
+  console.log("Caught runtime exception:", err);
+  process.exit(1);
+});
