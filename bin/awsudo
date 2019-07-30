@@ -1,72 +1,72 @@
-#!/usr/bin/env bash
-# DEPENDENCIES:
-#  - awscli
+#!/usr/bin/env node
 
-set -e # Exit on any child process error
+const AWS = require("aws-sdk");
+const { execSync } = require("child_process");
 
-VERBOSE=false
-POSITIONAL=()
-while [[ $# -gt 0 ]]
-do
-key="$1"
-case $key in
-    # IMPORTANT: We MUST skip options that are not at the very beginning of the command.
-    # Otherwise we could be stripping options being sent to the subcommand
-    -h|--help)
-    if [ "${#POSITIONAL[@]}" = 0 ]; then
-        echo "awsudo [-h|--help] [-v|--verbose] <role-arn> <sub command>"
-        exit 0
-    else
-        POSITIONAL+=("$1")
-        shift
-    fi
-    ;;
-    -v|--verbose)
-    if [ "${#POSITIONAL[@]}" = 0 ]; then
-        VERBOSE=true
-        shift
-    else
-        POSITIONAL+=("$1")
-        shift
-    fi
-    ;;
-    *)    # unknown option
-    POSITIONAL+=("$1")
-    shift
-    ;;
-esac
-done
-set -- "${POSITIONAL[@]}" # restore positional parameters
+const argv = require("yargs")
+  .parserConfiguration({
+    "halt-at-non-option": true
+  })
+  .usage(
+    "$0 <arn>",
+    "awsudo [-d|--duration] [-v|--verbose] <arn> <command..>",
+    yargs => {
+      yargs
+        .option("d", {
+          alias: "duration",
+          describe: "The duration to assume this role",
+          default: 900,
+          type: "number"
+        })
+        .option("v", {
+          alias: "verbose",
+          default: false,
+          type: "boolean"
+        })
+        .positional("arn", {
+          describe: "ARN to assume",
+          type: "string"
+        })
+        .positional("command", {
+          describe: "Command to run",
+          type: "array"
+        });
+    }
+  ).argv;
 
-ROLE_ARN=$1
-shift
+if (argv.verbose) {
+  console.log(`Using RoleArn: ${argv.arn}`);
+}
 
-if [[ ${ROLE_ARN} =~ ^arn:aws:iam ]]; then
-    if $VERBOSE; then
-        echo "Using RoleArn: ${ROLE_ARN}"
-    fi
-else
-    echo "Invalid role arn provided. Provided value: ${ROLE_ARN}"
-    exit 1
-fi
+if (!/^arn:aws:iam/.test(argv.arn)) {
+  console.log(`Invalid role arn provided. Provided value: ${argv.arn}`);
+  process.exit(1);
+}
 
-# Assume role for running cloud formation
-export CREDENTIALS=`aws sts assume-role --role-arn ${ROLE_ARN} --role-session-name RoleSession --duration-seconds 900 --output=json`
+(async () => {
+  var sts = new AWS.STS();
+  const data = await sts
+    .assumeRole({
+      RoleArn: argv.arn,
+      RoleSessionName: "RoleSession",
+      DurationSeconds: argv.duration
+    })
+    .promise();
+  const credentials = data.Credentials;
 
-# Report and exit if there is an error with role credentials
-if [[ "Invalid" = `node -e "try { JSON.parse(process.env.CREDENTIALS); } catch (error) { console.log('Invalid'); }"` ]]; then
-    echo "Credentials are invalid."
-    if [ -n "${CREDENTIALS}" ]; then
-        echo "Returned value: ${CREDENTIALS}"
-    fi
-    echo "Exiting."
-    exit 1
-fi
+  const command = [
+    ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
+    ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
+    ["AWS_SESSION_TOKEN", credentials.SessionToken],
+    ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
+  ]
+    .map(arr => arr.join("="))
+    .concat(argv._)
+    .join(" ");
 
-# Set AWS Assumed Role Credentials on ENV
-export AWS_ACCESS_KEY_ID=`node -p "JSON.parse(process.env.CREDENTIALS).Credentials.AccessKeyId"`
-export AWS_SECRET_ACCESS_KEY=`node -p "JSON.parse(process.env.CREDENTIALS).Credentials.SecretAccessKey"`
-export AWS_SESSION_TOKEN=`node -p "JSON.parse(process.env.CREDENTIALS).Credentials.SessionToken"`
-export AWS_EXPIRATION=`node -p "JSON.parse(process.env.CREDENTIALS).Credentials.Expiration"`
+  if (argv.verbose) {
+    console.log(`Running command ${command}`);
+  }
 
-eval $@
+  execSync(command, { stdio: "inherit" });
+})();
