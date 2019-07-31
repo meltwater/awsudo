@@ -1,0 +1,25 @@
+kind: pipeline
+name: awsudo build
+
+steps:
+  - name: install
+    image: node:10
+    commands:
+      - npm ci
+  - name: test
+    image: node:10
+    commands:
+      - npm test
+  - name: deploy-npm
+    image: node:10
+    commands:
+      - echo "//registry.npmjs.org/:_authToken=$${NPM_DEPLOY_TOKEN}" > ~/.npmrc
+      - echo "unsafe-perm=true" >> ~/.npmrc
+      - npm publish
+    environment:
+      NPM_DEPLOY_TOKEN:
+        from_secret: npm_deploy_token
+    when:
+      event: tag
+      branch:
+        - include: [ v* ]
