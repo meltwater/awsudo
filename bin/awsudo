@@ -3,11 +3,20 @@
 const AWS = require("aws-sdk");
 const { execSync } = require("child_process");
 
-const argv = require("yargs")
-  .parserConfiguration({
-    // By default, `yargs` stops parsing after `--`. This option stores unparsed arguments into argv["--"].
-    "populate--": true
-  })
+function parseArgvForAwsCommand() {
+    const argvArray = Array.from(process.argv).slice(2);
+    const arn = argvArray.find((option) => option.startsWith('arn:'));
+    const arnPosition = argvArray.indexOf(arn);
+    const awsudoOptions = argvArray.slice(0, arnPosition + 2);
+    const awsCommand = argvArray.slice(arnPosition + 1, argvArray.length);
+
+    return {
+        awsudoOptions,
+        awsCommand
+    };
+}
+
+const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
   .usage(
     "$0 [-d|--duration] [-v|--verbose] <arn> <command..>",
     "Assume an IAM role for the duration of a command",
@@ -70,10 +79,8 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
     ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
   ]
     .map(arr => arr.join("="))
-    .concat(argv.command);
-  if (argv["--"]) {
-    commandArgs = commandArgs.concat("--", argv["--"]);
-  }
+    .concat(parseArgvForAwsCommand().awsCommand);
+
   const command = commandArgs.join(" ");
 
   if (argv.verbose) {
