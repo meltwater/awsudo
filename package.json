@@ -43,5 +43,8 @@
   "dependencies": {
     "aws-sdk": "^2.502.0",
     "yargs": "^13.3.0"
+  },
+  "devDependencies": {
+    "mustache": "3.0.1"
   }
 }
