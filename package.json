@@ -42,5 +42,9 @@
   "homepage": "https://github.com/meltwater/awsudo#readme",
   "devDependencies": {
     "nsp": "^3.2.1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.502.0",
+    "yargs": "^13.3.0"
   }
 }

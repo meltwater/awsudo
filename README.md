@@ -1,4 +1,5 @@
 # awsudo
+
 [![Build Status](https://travis-ci.org/meltwater/awsudo.svg?branch=master)](https://travis-ci.org/meltwater/awsudo)
 
 A simple utility for easily executing AWS cli commands with an assumed role.
@@ -8,7 +9,22 @@ For more information about the motiviation behind developing this utility, pleas
 ## Usage
 
 ```bash
-awsudo [-h|--help] [-v|--verbose] arn:aws:iam::[AWS_ACCOUNT_ID]:role/[role name] [aws command]
+awsudo [-d|--duration] [-v|--verbose] <arn> <command..>
+
+Assume an IAM role for the duration of a command
+
+Positionals:
+  arn      ARN to assume                                                [string]
+  command  Command to run
+
+Options:
+  --help          Show help                                            [boolean]
+  --version       Show version number                                  [boolean]
+  -d, --duration  The duration to assume this role in seconds. See
+                  https://docs.aws.amazon.com/STS/latest/APIReference/API_Assume
+                  Role.html#API_AssumeRole_RequestParameters
+                                                         [number] [default: 900]
+  -v, --verbose   Show debug information              [boolean] [default: false]
 ```
 
 ### Install
@@ -80,27 +96,23 @@ Here is an example **Drone** pipeline step which uses the awsudo Docker image to
 deploy into AWS:
 
 ```yaml
-  deploy:
-    image: awsudo/awsudo:latest
-    commands:
-      # Copy build artifacts to publicly-readable S3 bucket
-      - awsudo arn:aws:iam::${AWS_ACCOUNT_ID}:role/S3Access aws s3 cp ./build s3://some-bucket --acl public-read --recursive
-    environment:
-      - AWS_DEFAULT_REGION=us-east-1
-    secrets:
-      - aws_access_key_id
-      - aws_account_id
-      - aws_secret_access_key
+deploy:
+  image: awsudo/awsudo:latest
+  commands:
+    # Copy build artifacts to publicly-readable S3 bucket
+    - awsudo arn:aws:iam::${AWS_ACCOUNT_ID}:role/S3Access aws s3 cp ./build s3://some-bucket --acl public-read --recursive
+  environment:
+    - AWS_DEFAULT_REGION=us-east-1
+  secrets:
+    - aws_access_key_id
+    - aws_account_id
+    - aws_secret_access_key
 ```
 
 ## Prerequisites
 
-* The awscli must be [configured](https://docs.aws.amazon.com/cli/latest/reference/configure/index.html) OR appropriate [environment variables are set](https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html)
-
-**For npm-based installations:**
-
-* This is a bash based package and must therefore be run in a bash environment
-* The [awscli](https://aws.amazon.com/cli/) must be available on the system.
+- Appropriate [environment variables must be set](https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html) for aws-sdk to work.
 
 ## Questions/Contact?
+
 The maintainer of this repository is the [AWS sudo open source maintainers at Meltwater](mailto:awsudo.opensource@meltwater.com), please send us any questions.
