@@ -1,8 +1,0 @@
-FROM meltwaterfoundation/drone-awscli:1.16.204
-LABEL name=awsudo/awsudo
-LABEL version="1.1.0"
-LABEL maintainer="awsudo opensource <awsudo.opensource@meltwater.com>"
-USER awsudo
-
-RUN apk add --update nodejs
-RUN npm i -g awsudo@1.1.0
