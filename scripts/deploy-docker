@@ -1,14 +1,17 @@
 #!/bin/bash
 set -e # Exit on any child process error
 
-echo "Deploying: awsudo/awsudo:${DOCKER_TAG}"
+echo "Deploying: awsudo/awsudo"
+cat package.json | mustache - Docker.template > Dockerfile
+
+VERSION=`node -p "require('./package').version"`
 
 echo "Logging in"
-docker login -u ${DOCKER_USERNAME} -p "${DOCKER_PASSWORD}"
+docker login
 echo "Building..."
-docker build . -t awsudo/awsudo:latest -t awsudo/awsudo:${DOCKER_TAG}
-echo "Push awsudo/awsudo:${DOCKER_TAG}"
-docker push awsudo/awsudo:${DOCKER_TAG}
+docker build . -t awsudo/awsudo:latest -t awsudo/awsudo:v${VERSION}
+echo "Push awsudo/awsudo:v${VERSION}"
+docker push awsudo/awsudo:v${VERSION}
 echo "Push awsudo/awsudo:latest"
 docker push awsudo/awsudo:latest
 echo "All done!"
