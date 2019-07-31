@@ -3,11 +3,13 @@
 const AWS = require("aws-sdk");
 const { execSync } = require("child_process");
 
+const REMOVE_NODE_COMMANDS = 2;
+const ARN_PLUS_NEXT_COMMAND = 2;
 function parseArgvForAwsCommand() {
-    const argvArray = Array.from(process.argv).slice(2);
+    const argvArray = Array.from(process.argv).slice(REMOVE_NODE_COMMANDS);
     const arn = argvArray.find((option) => option.startsWith('arn:'));
     const arnPosition = argvArray.indexOf(arn);
-    const awsudoOptions = argvArray.slice(0, arnPosition + 2);
+    const awsudoOptions = argvArray.slice(0, arnPosition + ARN_PLUS_NEXT_COMMAND);
     const awsCommand = argvArray.slice(arnPosition + 1, argvArray.length);
 
     return {
