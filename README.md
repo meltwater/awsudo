@@ -113,6 +113,10 @@ deploy:
 
 - Appropriate [environment variables must be set](https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html) for aws-sdk to work.
 
+## Thanks to all of our contributors!
+
+[Contributors list](CONTRIBUTORS.md)
+
 ## Questions/Contact?
 
 The maintainer of this repository is the [AWS sudo open source maintainers at Meltwater](mailto:awsudo.opensource@meltwater.com), please send us any questions.
