@@ -23,3 +23,28 @@ steps:
       event: tag
       branch:
         - include: [ v* ]
+  - name: build-packages
+    image: ruby:2.6-buster
+    commands:
+      - apt-get update
+      - apt-get install -y ruby-dev build-essential
+      - gem install fpm
+      - fpm -s npm -t deb --license MIT -n awsudo -m awsudo.opensource@meltwater.com .
+      - fpm -s npm -t rpm --license MIT -n awsudo -m awsudo.opensource@meltwater.com .
+    when:
+      event: tag
+      branch:
+        - include: [ v* ]
+  - name: release-packages
+    image: plugins/github-release
+    settings:
+      api_key:
+        from_secret: github_api_key
+      files:
+        - "*.deb"
+        - "*.rpm"
+    when:
+      event: tag
+      branch:
+        - include: [ v* ]
+
