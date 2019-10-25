@@ -24,10 +24,10 @@ steps:
       branch:
         - include: [ v* ]
   - name: build-packages
-    image: ruby:2.6-buster
+    image: node:10
     commands:
       - apt-get update
-      - apt-get install -y ruby-dev build-essential
+      - apt-get install -y ruby-dev build-essential rpm
       - gem install fpm
       - fpm -s npm -t deb --license MIT -n awsudo -m awsudo.opensource@meltwater.com .
       - fpm -s npm -t rpm --license MIT -n awsudo -m awsudo.opensource@meltwater.com .
