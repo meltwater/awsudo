@@ -10,7 +10,8 @@
     "postversion": "git push --follow-tags",
     "preversion": "npm test",
     "start": "bin/awsudo",
-    "test": "npm outdated && npm audit"
+    "test": "npm outdated && npm audit",
+    "update": "npx npm-check -uE"
   },
   "repository": {
     "type": "git",
@@ -41,10 +42,10 @@
   },
   "homepage": "https://github.com/meltwater/awsudo#readme",
   "dependencies": {
-    "aws-sdk": "^2.502.0",
-    "yargs": "^13.3.0"
+    "aws-sdk": "2.556.0",
+    "yargs": "14.2.0"
   },
   "devDependencies": {
-    "mustache": "3.0.1"
+    "mustache": "3.1.0"
   }
 }
