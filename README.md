@@ -90,11 +90,10 @@ These can be downloaded from
     ```bash
     curl -LO $(curl -s https://api.github.com/repos/meltwater/awsudo/releases/latest | grep -Eo 'https://github\.com/meltwater/awsudo/releases/download/v.*\.rpm')
     ```
-
-**Note:** Be sure to install Node.js separately. These packages are not marked
-as dependent on Node.js within the Debian or Red Hat ecosystems. This is to
-facilitate portability across distributions and to accomodate the multitude
-of ways node can be installed (e.g. using nvm).
+**Note:** Be sure Node.js is installed separately. These packages are not
+marked as dependent on Node.js within the Debian or Red Hat ecosystems. This
+is to facilitate portability across distributions and to accomodate the
+multitude of ways node can be installed (e.g. using nvm).
 
 ### Example usages
 
