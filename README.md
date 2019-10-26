@@ -80,6 +80,7 @@ These can be downloaded from
 
 1. the [releases tab](https://github.com/meltwater/awsudo/releases) in your browser
 2. the command-line:
+
     **Latest .deb**
     ```bash
     curl -LO $(curl -s https://api.github.com/repos/meltwater/awsudo/releases/latest | grep -Eo 'https://github\.com/meltwater/awsudo/releases/download/v.*\.rpm')
