@@ -71,6 +71,20 @@ interactively:
 docker run -it -v ~/.aws:/root/.aws awsudo/awsudo awsudo /bin/bash
 ```
 
+#### .deb package
+
+We provide
+
+Two options:
+1. Download it in your browser from the [releases tab](https://github.com/meltwater/awsudo/releases)
+2. From the command-line:
+```bash
+LATEST_RELEASE_URL=$(curl -s https://api.github.com/repos/meltwater/awsudo/releases/latest | grep -Eo 'https://github\.com/meltwater/awsudo/releases/download/v.*\.deb')
+LATEST_RELEASE_FILE=${LATEST_RELEASE_URL##*/}
+curl $LATEST_RELEASE_URL -o $LATEST_RELEASE_FILE
+dpkg -i $LATEST_RELEASE_FILE
+```
+
 ### Example usages
 
 #### Command
