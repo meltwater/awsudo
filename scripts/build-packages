@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+TARBALL_NAME=$(npm pack)
+fpm -s npm -t deb --license MIT -n awsudo -m awsudo.opensource@meltwater.com $TARBALL_NAME
+fpm -s npm -t rpm --license MIT -n awsudo -m awsudo.opensource@meltwater.com $TARBALL_NAME

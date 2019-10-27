@@ -29,8 +29,7 @@ steps:
       - apt-get update
       - apt-get install -y ruby-dev build-essential rpm
       - gem install fpm
-      - fpm -s npm -t deb --license MIT -n awsudo -m awsudo.opensource@meltwater.com .
-      - fpm -s npm -t rpm --license MIT -n awsudo -m awsudo.opensource@meltwater.com .
+      - scripts/build-packages
     when:
       event: tag
       branch:
