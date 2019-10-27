@@ -71,6 +71,31 @@ interactively:
 docker run -it -v ~/.aws:/root/.aws awsudo/awsudo awsudo /bin/bash
 ```
 
+#### deb and rpm packages
+
+In addition to the native npm package and Docker image, there are .deb and .rpm
+packages avaialble.
+
+> **Warning:** You must install Node.js separately, because these packages are not
+> marked as dependent on Node.js within the Debian or Red Hat ecosystems. This
+> facilitates portability across distributions and better accomodates the
+> multitude of ways Node.js can be installed (e.g. using nvm).
+
+These can be downloaded from
+
+1. the [releases tab](https://github.com/meltwater/awsudo/releases) in your browser
+2. the command-line:
+
+    **Latest .deb**
+    ```bash
+    curl -LO $(curl -s https://api.github.com/repos/meltwater/awsudo/releases/latest | grep -Eo 'https://github\.com/meltwater/awsudo/releases/download/v.*\.deb')
+    ```
+
+    **Latest .rpm**
+    ```bash
+    curl -LO $(curl -s https://api.github.com/repos/meltwater/awsudo/releases/latest | grep -Eo 'https://github\.com/meltwater/awsudo/releases/download/v.*\.rpm')
+    ```
+
 ### Example usages
 
 #### Command
