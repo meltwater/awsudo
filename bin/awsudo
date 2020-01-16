@@ -20,7 +20,7 @@ function parseArgvForAwsCommand() {
 
 const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
   .usage(
-    "$0 [-d|--duration] [-v|--verbose] <arn> <command..>",
+    "$0 [-d|--duration] [-n|--session-name] [-v|--verbose] <arn> <command..>",
     "Assume an IAM role for the duration of a command",
     yargs => {
       yargs
@@ -30,6 +30,12 @@ const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
             "The duration to assume this role in seconds. See https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html#API_AssumeRole_RequestParameters",
           default: 900,
           type: "number"
+        })
+        .option("n", {
+          alias: "session-name",
+          describe: "The role session name to use",
+          default: "RoleSession",
+          type: "string"
         })
         .option("v", {
           alias: "verbose",
@@ -64,7 +70,7 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
     const data = await sts
       .assumeRole({
         RoleArn: argv.arn,
-        RoleSessionName: "RoleSession",
+        RoleSessionName: argv.sessionName,
         DurationSeconds: argv.duration
       })
       .promise();

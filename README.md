@@ -9,7 +9,7 @@ For more information about the motiviation behind developing this utility, pleas
 ## Usage
 
 ```bash
-awsudo [-d|--duration] [-v|--verbose] <arn> <command..>
+awsudo [-d|--duration] [-n|--session-name] [-v|--verbose] <arn> <command..>
 
 Assume an IAM role for the duration of a command
 
@@ -18,13 +18,15 @@ Positionals:
   command  Command to run
 
 Options:
-  --help          Show help                                            [boolean]
-  --version       Show version number                                  [boolean]
-  -d, --duration  The duration to assume this role in seconds. See
-                  https://docs.aws.amazon.com/STS/latest/APIReference/API_Assume
-                  Role.html#API_AssumeRole_RequestParameters
+  --help              Show help                                        [boolean]
+  --version           Show version number                              [boolean]
+  -d, --duration      The duration to assume this role in seconds. See
+                      https://docs.aws.amazon.com/STS/latest/APIReference/API_As
+                      sumeRole.html#API_AssumeRole_RequestParameters
                                                          [number] [default: 900]
-  -v, --verbose   Show debug information              [boolean] [default: false]
+  -n, --session-name  The role session name to use
+                                               [string] [default: "RoleSession"]
+  -v, --verbose       Show debug information          [boolean] [default: false]
 ```
 
 ### Install
