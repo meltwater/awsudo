@@ -42,10 +42,10 @@
   },
   "homepage": "https://github.com/meltwater/awsudo#readme",
   "dependencies": {
-    "aws-sdk": "2.556.0",
-    "yargs": "14.2.0"
+    "aws-sdk": "2.604.0",
+    "yargs": "15.1.0"
   },
   "devDependencies": {
-    "mustache": "3.1.0"
+    "mustache": "4.0.0"
   }
 }
