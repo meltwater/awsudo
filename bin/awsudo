@@ -20,7 +20,7 @@ function parseArgvForAwsCommand() {
 
 const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
   .usage(
-    "$0 [-d|--duration] [-n|--session-name] [-v|--verbose] <arn> <command..>",
+    "$0 [-d|--duration] [-n|--session-name] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] <arn> <command..>",
     "Assume an IAM role for the duration of a command",
     yargs => {
       yargs
@@ -42,6 +42,18 @@ const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
           describe: "Show debug information",
           default: false,
           type: "boolean"
+        })
+        .option("t", {
+          alias: "mfa-token",
+          describe: "Current MFA token [Must also supply mfa-token-arn]",
+          default: false,
+          type: "string"
+        })
+        .option("m", {
+         alias: "mfa-token-arn",
+         describe: "ARN for users MFA token [Must also supply mfa-token]",
+         default: false,
+         type: "string"
         })
         .positional("arn", {
           describe: "ARN to assume",
@@ -67,12 +79,19 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
   const sts = new AWS.STS();
   let credentials;
   try {
-    const data = await sts
-      .assumeRole({
+    const assumeRoleParameters = {
         RoleArn: argv.arn,
         RoleSessionName: argv.sessionName,
         DurationSeconds: argv.duration
-      })
+    };
+
+    if(argv.mfaToken && argv.mfaTokenArn) {
+        assumeRoleParameters.SerialNumber = argv.mfaTokenArn;
+        assumeRoleParameters.TokenCode = argv.mfaToken;
+    }
+
+    const data = await sts
+      .assumeRole(assumeRoleParameters)
       .promise();
     credentials = data.Credentials;
   } catch (err) {
