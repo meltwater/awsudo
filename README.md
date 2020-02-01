@@ -29,7 +29,7 @@ Options:
   -v, --verbose        Show debug information       [boolean] [default: false]
   -t, --mfa-token      Current MFA token [Must also supply mfa-token-arn]
                                                      [string] [default: false]
-  -m, --mfa-token-arn  ARN for users MFA token [Must also supply mfa-token]
+  -m, --mfa-token-arn  ARN for users MFA [Must also supply mfa-token]
                                                      [string] [default: false]
 
 ```

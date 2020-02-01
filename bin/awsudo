@@ -51,7 +51,7 @@ const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
         })
         .option("m", {
          alias: "mfa-token-arn",
-         describe: "ARN for users MFA token [Must also supply mfa-token]",
+         describe: "ARN for users MFA [Must also supply mfa-token]",
          default: false,
          type: "string"
         })
