@@ -88,6 +88,10 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
     if(argv.mfaToken && argv.mfaTokenArn) {
         assumeRoleParameters.SerialNumber = argv.mfaTokenArn;
         assumeRoleParameters.TokenCode = argv.mfaToken;
+    } else if(argv.mfaToken || argv.mfaTokenArn) {
+        console.error('To use MFA you must supply both --mfa-token-arn and --mfa-token');
+        process.exitCode = -1;
+        return;
     }
 
     const data = await sts
