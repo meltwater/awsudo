@@ -76,8 +76,9 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
 }
 
 (async () => {
-  const sts = new AWS.STS();
   let credentials;
+  const stsOptions = {};
+ 
   try {
     const assumeRoleParameters = {
         RoleArn: argv.arn,
@@ -88,12 +89,14 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
     if(argv.mfaToken && argv.mfaTokenArn) {
         assumeRoleParameters.SerialNumber = argv.mfaTokenArn;
         assumeRoleParameters.TokenCode = argv.mfaToken;
+        stsOptions.correctClockSkew = true;
     } else if(argv.mfaToken || argv.mfaTokenArn) {
         console.error('To use MFA you must supply both --mfa-token-arn and --mfa-token');
         process.exitCode = -1;
         return;
     }
 
+    const sts = new AWS.STS(stsOptions);
     const data = await sts
       .assumeRole(assumeRoleParameters)
       .promise();
