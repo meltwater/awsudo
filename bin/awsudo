@@ -78,7 +78,7 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
 (async () => {
   let credentials;
   const stsOptions = {};
- 
+
   try {
     const assumeRoleParameters = {
         RoleArn: argv.arn,
@@ -106,7 +106,7 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
     process.exit(1);
   }
 
-  let commandArgs = [
+  const commandArgs = [
     ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
     ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
     ["AWS_SESSION_TOKEN", credentials.SessionToken],
@@ -123,7 +123,7 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
 
   execSync(command, { stdio: "inherit" });
 })().catch(err => {
-  if (argv.verbose) { 
+  if (argv.verbose) {
     console.log("Caught runtime exception:", err);
   }
   process.exit(1);
