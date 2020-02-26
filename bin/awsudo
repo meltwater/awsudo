@@ -124,7 +124,9 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
   execSync(command, { stdio: "inherit" });
 })().catch(err => {
   if (argv.verbose) {
-    console.log("Caught runtime exception:", err);
+    const maskedError = err.replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
+    console.log("Caught runtime exception:", maskedError);
   }
+
   process.exit(1);
 });
