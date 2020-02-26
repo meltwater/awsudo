@@ -1,15 +1,5 @@
 {
   // http://eslint.org/docs/rules/
-  "env": {
-    "browser": true,
-    "amd": true,
-    "jasmine": true,
-    "es6": true,
-    "node": true
-  },
-  "globals": {
-    "angular": true
-  },
   "parserOptions": {
     "ecmaVersion": 2017,
     "sourceType": "module"
