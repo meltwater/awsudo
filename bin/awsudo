@@ -123,6 +123,8 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
 
   execSync(command, { stdio: "inherit" });
 })().catch(err => {
-  console.log("Caught runtime exception:", err);
+  if (argv.verbose) { 
+    console.log("Caught runtime exception:", err);
+  }
   process.exit(1);
 });
