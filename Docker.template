@@ -1,4 +1,4 @@
-FROM meltwaterfoundation/drone-awscli:1.16.204
+FROM meltwaterfoundation/drone-awscli:1.18.106
 LABEL name=awsudo/awsudo
 LABEL version="v{{version}}"
 LABEL maintainer="awsudo opensource <awsudo.opensource@meltwater.com>"
