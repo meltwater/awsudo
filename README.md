@@ -9,7 +9,8 @@ For more information about the motiviation behind developing this utility, pleas
 ## Usage
 
 ```bash
-awsudo [-d|--duration] [-n|--session-name] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] <arn> <command..>
+awsudo [-d|--duration] [-n|--session-name] [-e|--external-id] [-v|--verbose]
+[-m|--mfa-token-arn] [-t|--mfa-token] <arn> <command..>
 
 Assume an IAM role for the duration of a command
 
@@ -18,20 +19,21 @@ Positionals:
   command  Command to run
 
 Options:
-  --help               Show help                                     [boolean]
-  --version            Show version number                           [boolean]
+  --help               Show help                                       [boolean]
+  --version            Show version number                             [boolean]
   -d, --duration       The duration to assume this role in seconds. See
-                       https://docs.aws.amazon.com/STS/latest/APIReference/API
-                       _AssumeRole.html#API_AssumeRole_RequestParameters
-                                                       [number] [default: 900]
+                       https://docs.aws.amazon.com/STS/latest/APIReference/API_A
+                       ssumeRole.html#API_AssumeRole_RequestParameters
+                                                         [number] [default: 900]
   -n, --session-name   The role session name to use
-                                             [string] [default: "RoleSession"]
-  -v, --verbose        Show debug information       [boolean] [default: false]
+                                               [string] [default: "RoleSession"]
+  -e, --external-id    The external id string used to authenticate role
+                       assumption                      [string] [default: false]
+  -v, --verbose        Show debug information         [boolean] [default: false]
   -t, --mfa-token      Current MFA token [Must also supply mfa-token-arn]
-                                                     [string] [default: false]
+                                                       [string] [default: false]
   -m, --mfa-token-arn  ARN for users MFA [Must also supply mfa-token]
-                                                     [string] [default: false]
-
+                                                       [string] [default: false]
 ```
 
 ### Install
