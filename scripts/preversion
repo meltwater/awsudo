@@ -1,0 +1,56 @@
+#!/bin/bash
+################################################################################
+#                                                                              #
+# preversion - verify a code base as ready to release a new version            #
+#                                                                              #
+# - it is based on the master branch                                           #
+# - it is up-to-date with the git remote                                       #
+# - it passes tests                                                            #
+#                                                                              #
+################################################################################
+set -e
+
+verify_branch_is_master() {
+    echo "[INFO] Verifying current branch is 'master'"
+    CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+    if [ "$CURRENT_BRANCH" != "master" ]; then
+        printf "[ERROR] Current branch: %s\n\n" "$CURRENT_BRANCH"
+        exit 1
+    fi
+}
+
+verify_up_to_date_with_origin() {
+    echo "[INFO] Verifying release is up-to-date with origin/master"
+    if git rev-list --left-right --count origin/master... | grep -E '[^0[:blank:]]' > /dev/null 2>&1; then
+        echo "[ERROR] Local working copy is behind or ahead of origin. Please fetch and merge."
+        exit 1
+    fi
+}
+
+verify_local_copy_is_clean() {
+    echo "[INFO] Verifying there aren't uncommited changes"
+    if [ "$(git diff --cached)" != "" ] || [ "$(git diff)" != "" ]; then
+        echo "[ERROR] Local working copy has uncommitted changes. Were these supposed to be committed?"
+        echo "[ERROR] Please commit, stash or reset these changes."
+        exit 1
+    fi
+}
+
+verify_tests_pass() {
+    if [ -f package.json ]; then
+        echo "[INFO] Running tests for npm project"
+        npm test
+    fi
+}
+
+################################################################################
+#                                     Main                                     #
+################################################################################
+echo "[INFO] Verifying preparedness to release a new version"
+
+verify_local_copy_is_clean
+verify_branch_is_master
+verify_up_to_date_with_origin
+verify_tests_pass
+
+echo "[INFO] Ready to release a new version"

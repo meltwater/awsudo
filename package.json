@@ -9,7 +9,7 @@
     "deploy-docker": "scripts/deploy-docker",
     "postversion": "git push --follow-tags",
     "pretest": "npm outdated && npm audit",
-    "preversion": "npm test",
+    "preversion": "scripts/preversion",
     "start": "bin/awsudo",
     "test": "eslint bin/awsudo",
     "update": "npx npm-check -uE"
