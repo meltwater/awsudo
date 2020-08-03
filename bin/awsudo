@@ -20,7 +20,7 @@ function parseArgvForAwsCommand() {
 
 const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
   .usage(
-    "$0 [-d|--duration] [-n|--session-name] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] <arn> <command..>",
+    "$0 [-d|--duration] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] <arn> <command..>",
     "Assume an IAM role for the duration of a command",
     yargs => {
       yargs
@@ -37,6 +37,12 @@ const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
           default: "RoleSession",
           type: "string"
         })
+        .option("e", {
+            alias: "external-id",
+            describe: "The external id string used to authenticate role assumption",
+            default: false,
+            type: "string"
+          })
         .option("v", {
           alias: "verbose",
           describe: "Show debug information",
@@ -85,6 +91,10 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
         RoleSessionName: argv.sessionName,
         DurationSeconds: argv.duration
     };
+
+    if(argv.externalId) {
+        assumeRoleParameters.ExternalId = argv.externalId;
+    }
 
     if(argv.mfaToken && argv.mfaTokenArn) {
         assumeRoleParameters.SerialNumber = argv.mfaTokenArn;
