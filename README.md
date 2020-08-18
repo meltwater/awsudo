@@ -147,9 +147,13 @@ deploy:
 
 - Appropriate [environment variables must be set](https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html) for aws-sdk to work.
 
-## Thanks to all of our contributors!
+## Contributing
 
-[Contributors list](CONTRIBUTORS.md)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/meltwater/awsudo)
+
+Do we accept contributions? YES! (see our [policy](CONTRIBUTING.md) for details)
+
+Thank you to everyone who has been one of our [contributors](CONTRIBUTORS.md)!
 
 ## Questions/Contact?
 
