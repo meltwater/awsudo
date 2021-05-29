@@ -12,7 +12,6 @@ printf "\n%s available!\n\n" "$VERSION"
 echo "Deploying: awsudo/awsudo"
 mustache package.json Docker.template > Dockerfile
 
-echo "Please log in with Docker"
 docker login
 
 echo "Building..."
