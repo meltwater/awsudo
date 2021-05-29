@@ -7,7 +7,7 @@
   },
   "scripts": {
     "deploy-docker": "scripts/deploy-docker",
-    "postversion": "git push --follow-tags",
+    "postversion": "scripts/postversion",
     "pretest": "npm outdated && npm audit",
     "preversion": "scripts/preversion",
     "start": "bin/awsudo",
