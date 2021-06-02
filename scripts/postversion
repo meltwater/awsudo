@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Trigger CI publish of packages by version
+git push --follow-tags
+
+# Deploy Docker image
+scripts/deploy-docker
+

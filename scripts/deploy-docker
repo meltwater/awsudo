@@ -1,17 +1,26 @@
 #!/bin/bash
 set -e # Exit on any child process error
+VERSION=$(node -p "require('./package').version")
+
+printf "Awaiting publish of version %s before starting Docker deploy\n" "$VERSION"
+while [ "$(npm info . version)" != "$VERSION" ]; do
+    printf "."
+    sleep 1
+done
+printf "\n%s available!\n\n" "$VERSION"
 
 echo "Deploying: awsudo/awsudo"
-cat package.json | mustache - Docker.template > Dockerfile
+mustache package.json Docker.template > Dockerfile
 
-VERSION=`node -p "require('./package').version"`
-
-echo "Logging in"
 docker login
+
 echo "Building..."
-docker build . -t awsudo/awsudo:latest -t awsudo/awsudo:v${VERSION}
-echo "Push awsudo/awsudo:v${VERSION}"
-docker push awsudo/awsudo:v${VERSION}
+docker build . -t awsudo/awsudo:latest -t awsudo/awsudo:v"${VERSION}"
+
+printf "Push awsudo/awsudo:v%s\n" "${VERSION}"
+docker push awsudo/awsudo:v"${VERSION}"
+
 echo "Push awsudo/awsudo:latest"
 docker push awsudo/awsudo:latest
+
 echo "All done!"

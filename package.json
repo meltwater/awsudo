@@ -7,7 +7,7 @@
   },
   "scripts": {
     "deploy-docker": "scripts/deploy-docker",
-    "postversion": "git push --follow-tags",
+    "postversion": "scripts/postversion",
     "pretest": "npm outdated && npm audit",
     "preversion": "scripts/preversion",
     "start": "bin/awsudo",
@@ -43,11 +43,11 @@
   },
   "homepage": "https://github.com/meltwater/awsudo#readme",
   "dependencies": {
-    "aws-sdk": "2.781.0",
-    "yargs": "16.1.0"
+    "aws-sdk": "2.918.0",
+    "yargs": "17.0.1"
   },
   "devDependencies": {
-    "eslint": "7.12.1",
-    "mustache": "4.0.1"
+    "eslint": "7.27.0",
+    "mustache": "4.2.0"
   }
 }
