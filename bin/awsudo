@@ -20,7 +20,7 @@ function parseArgvForAwsCommand() {
 
 const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
   .usage(
-    "$0 [-d|--duration] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] <arn> <command..>",
+    "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] <arn> <command..>",
     "Assume an IAM role for the duration of a command",
     yargs => {
       yargs
@@ -30,6 +30,12 @@ const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
             "The duration to assume this role in seconds. See https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html#API_AssumeRole_RequestParameters",
           default: 900,
           type: "number"
+        })
+        .option("p", {
+          alias: "profile",
+          describe: "The profile used to assume the role",
+          default: "",
+          type: "string"
         })
         .option("n", {
           alias: "session-name",
@@ -82,6 +88,7 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
 }
 
 (async () => {
+  let command;
   let credentials;
   const stsOptions = {};
 
@@ -106,6 +113,10 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
         return;
     }
 
+    if (argv.profile) {
+      AWS.config.credentials = new AWS.SharedIniFileCredentials({ profile: argv.profile });
+    }
+
     const sts = new AWS.STS(stsOptions);
     const data = await sts
       .assumeRole(assumeRoleParameters)
@@ -122,10 +133,17 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
     ["AWS_SESSION_TOKEN", credentials.SessionToken],
     ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
   ]
-    .map(arr => arr.join("="))
-    .concat(parseArgvForAwsCommand().awsCommand);
+    .map(arr => arr.join("="));
 
-  const command = commandArgs.join(" ");
+  if (process.platform === "win32") {
+    command = commandArgs
+      .map((arr) => `SET "${arr}"`)
+      .concat(parseArgvForAwsCommand().awsCommand.join(" "))
+      .join(" & ");
+  }
+  else {
+    command = commandArgs.concat(parseArgvForAwsCommand().awsCommand).join(" ");
+  }
 
   if (argv.verbose) {
     console.log(`Running command ${command}`);

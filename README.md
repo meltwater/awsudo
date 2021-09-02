@@ -9,7 +9,7 @@ For more information about the motiviation behind developing this utility, pleas
 ## Usage
 
 ```bash
-awsudo [-d|--duration] [-n|--session-name] [-e|--external-id] [-v|--verbose]
+awsudo [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose]
 [-m|--mfa-token-arn] [-t|--mfa-token] <arn> <command..>
 
 Assume an IAM role for the duration of a command
@@ -25,6 +25,8 @@ Options:
                        https://docs.aws.amazon.com/STS/latest/APIReference/API_A
                        ssumeRole.html#API_AssumeRole_RequestParameters
                                                          [number] [default: 900]
+  -p, --profile       The profile used to assume the role
+                                                          [string] [default: ""]
   -n, --session-name   The role session name to use
                                                [string] [default: "RoleSession"]
   -e, --external-id    The external id string used to authenticate role
@@ -95,15 +97,17 @@ These can be downloaded from
 1. the [releases tab](https://github.com/meltwater/awsudo/releases) in your browser
 2. the command-line:
 
-    **Latest .deb**
-    ```bash
-    curl -LO $(curl -s https://api.github.com/repos/meltwater/awsudo/releases/latest | grep -Eo 'https://github\.com/meltwater/awsudo/releases/download/v.*\.deb')
-    ```
+   **Latest .deb**
 
-    **Latest .rpm**
-    ```bash
-    curl -LO $(curl -s https://api.github.com/repos/meltwater/awsudo/releases/latest | grep -Eo 'https://github\.com/meltwater/awsudo/releases/download/v.*\.rpm')
-    ```
+   ```bash
+   curl -LO $(curl -s https://api.github.com/repos/meltwater/awsudo/releases/latest | grep -Eo 'https://github\.com/meltwater/awsudo/releases/download/v.*\.deb')
+   ```
+
+   **Latest .rpm**
+
+   ```bash
+   curl -LO $(curl -s https://api.github.com/repos/meltwater/awsudo/releases/latest | grep -Eo 'https://github\.com/meltwater/awsudo/releases/download/v.*\.rpm')
+   ```
 
 ### Example usages
 
