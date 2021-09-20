@@ -19,142 +19,142 @@ function parseArgvForAwsCommand() {
 }
 
 const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
-  .usage(
-    "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] <arn> <command..>",
-    "Assume an IAM role for the duration of a command",
-    yargs => {
-      yargs
-        .option("d", {
-          alias: "duration",
-          describe:
-            "The duration to assume this role in seconds. See https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html#API_AssumeRole_RequestParameters",
-          default: 900,
-          type: "number"
-        })
-        .option("p", {
-          alias: "profile",
-          describe: "The profile used to assume the role",
-          default: "",
-          type: "string"
-        })
-        .option("n", {
-          alias: "session-name",
-          describe: "The role session name to use",
-          default: "RoleSession",
-          type: "string"
-        })
-        .option("e", {
-            alias: "external-id",
-            describe: "The external id string used to authenticate role assumption",
-            default: false,
-            type: "string"
-          })
-        .option("v", {
-          alias: "verbose",
-          describe: "Show debug information",
-          default: false,
-          type: "boolean"
-        })
-        .option("t", {
-          alias: "mfa-token",
-          describe: "Current MFA token [Must also supply mfa-token-arn]",
-          default: false,
-          type: "string"
-        })
-        .option("m", {
-         alias: "mfa-token-arn",
-         describe: "ARN for users MFA [Must also supply mfa-token]",
-         default: false,
-         type: "string"
-        })
-        .positional("arn", {
-          describe: "ARN to assume",
-          type: "string"
-        })
-        .positional("command", {
-          describe: "Command to run",
-          type: "array"
-        });
-    }
-  ).argv;
+    .usage(
+        "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] <arn> <command..>",
+        "Assume an IAM role for the duration of a command",
+        yargs => {
+            yargs
+                .option("d", {
+                    alias: "duration",
+                    describe:
+                        "The duration to assume this role in seconds. See https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html#API_AssumeRole_RequestParameters",
+                    default: 900,
+                    type: "number"
+                })
+                .option("p", {
+                    alias: "profile",
+                    describe: "The profile used to assume the role",
+                    default: "",
+                    type: "string"
+                })
+                .option("n", {
+                    alias: "session-name",
+                    describe: "The role session name to use",
+                    default: "RoleSession",
+                    type: "string"
+                })
+                .option("e", {
+                    alias: "external-id",
+                    describe: "The external id string used to authenticate role assumption",
+                    default: false,
+                    type: "string"
+                })
+                .option("v", {
+                    alias: "verbose",
+                    describe: "Show debug information",
+                    default: false,
+                    type: "boolean"
+                })
+                .option("t", {
+                    alias: "mfa-token",
+                    describe: "Current MFA token [Must also supply mfa-token-arn]",
+                    default: false,
+                    type: "string"
+                })
+                .option("m", {
+                    alias: "mfa-token-arn",
+                    describe: "ARN for users MFA [Must also supply mfa-token]",
+                    default: false,
+                    type: "string"
+                })
+                .positional("arn", {
+                    describe: "ARN to assume",
+                    type: "string"
+                })
+                .positional("command", {
+                    describe: "Command to run",
+                    type: "array"
+                });
+        }
+    ).argv;
 
 if (argv.verbose) {
-  console.log(`Using RoleArn: ${argv.arn}`);
+    console.log(`Using RoleArn: ${argv.arn}`);
 }
 
 if (!/^arn:aws:iam/.test(argv.arn)) {
-  console.log(`Invalid role arn provided. Provided value: ${argv.arn}`);
-  process.exit(1);
+    console.log(`Invalid role arn provided. Provided value: ${argv.arn}`);
+    process.exit(1);
 }
 
 (async () => {
-  let command;
-  let credentials;
-  const stsOptions = {};
+    let command;
+    let credentials;
+    const stsOptions = {};
 
-  try {
-    const assumeRoleParameters = {
-        RoleArn: argv.arn,
-        RoleSessionName: argv.sessionName,
-        DurationSeconds: argv.duration
-    };
+    try {
+        const assumeRoleParameters = {
+            RoleArn: argv.arn,
+            RoleSessionName: argv.sessionName,
+            DurationSeconds: argv.duration
+        };
 
-    if(argv.externalId) {
-        assumeRoleParameters.ExternalId = argv.externalId;
+        if (argv.externalId) {
+            assumeRoleParameters.ExternalId = argv.externalId;
+        }
+
+        if (argv.mfaToken && argv.mfaTokenArn) {
+            assumeRoleParameters.SerialNumber = argv.mfaTokenArn;
+            assumeRoleParameters.TokenCode = argv.mfaToken;
+            stsOptions.correctClockSkew = true;
+        } else if (argv.mfaToken || argv.mfaTokenArn) {
+            console.error('To use MFA you must supply both --mfa-token-arn and --mfa-token');
+            process.exitCode = -1;
+            return;
+        }
+
+        if (argv.profile) {
+            AWS.config.credentials = new AWS.SharedIniFileCredentials({ profile: argv.profile });
+        }
+
+        const sts = new AWS.STS(stsOptions);
+        const data = await sts
+            .assumeRole(assumeRoleParameters)
+            .promise();
+        credentials = data.Credentials;
+    } catch (err) {
+        console.log("Exception while assuming role:", err);
+        process.exit(1);
     }
 
-    if(argv.mfaToken && argv.mfaTokenArn) {
-        assumeRoleParameters.SerialNumber = argv.mfaTokenArn;
-        assumeRoleParameters.TokenCode = argv.mfaToken;
-        stsOptions.correctClockSkew = true;
-    } else if(argv.mfaToken || argv.mfaTokenArn) {
-        console.error('To use MFA you must supply both --mfa-token-arn and --mfa-token');
-        process.exitCode = -1;
-        return;
+    const commandArgs = [
+        ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
+        ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
+        ["AWS_SESSION_TOKEN", credentials.SessionToken],
+        ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
+    ]
+        .map(arr => arr.join("="));
+
+    if (process.platform === "win32") {
+        command = commandArgs
+            .map((arr) => `SET "${arr}"`)
+            .concat(parseArgvForAwsCommand().awsCommand.join(" "))
+            .join(" & ");
+    }
+    else {
+        command = commandArgs.concat(parseArgvForAwsCommand().awsCommand).join(" ");
     }
 
-    if (argv.profile) {
-      AWS.config.credentials = new AWS.SharedIniFileCredentials({ profile: argv.profile });
+    if (argv.verbose) {
+        console.log(`Running command ${command}`);
     }
 
-    const sts = new AWS.STS(stsOptions);
-    const data = await sts
-      .assumeRole(assumeRoleParameters)
-      .promise();
-    credentials = data.Credentials;
-  } catch (err) {
-    console.log("Exception while assuming role:", err);
-    process.exit(1);
-  }
-
-  const commandArgs = [
-    ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
-    ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
-    ["AWS_SESSION_TOKEN", credentials.SessionToken],
-    ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
-  ]
-    .map(arr => arr.join("="));
-
-  if (process.platform === "win32") {
-    command = commandArgs
-      .map((arr) => `SET "${arr}"`)
-      .concat(parseArgvForAwsCommand().awsCommand.join(" "))
-      .join(" & ");
-  }
-  else {
-    command = commandArgs.concat(parseArgvForAwsCommand().awsCommand).join(" ");
-  }
-
-  if (argv.verbose) {
-    console.log(`Running command ${command}`);
-  }
-
-  execSync(command, { stdio: "inherit" });
+    execSync(command, { stdio: "inherit" });
 })().catch(err => {
-  if (argv.verbose) {
-    const maskedError = err.replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
-    console.log("Caught runtime exception:", maskedError);
-  }
+    if (argv.verbose) {
+        const maskedError = err.replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
+        console.log("Caught runtime exception:", maskedError);
+    }
 
-  process.exit(1);
+    process.exit(1);
 });
