@@ -8,3 +8,4 @@
 [<img alt="rclmenezes" src="https://avatars2.githubusercontent.com/u/1236583?v=4&s=117" width="117">](https://github.com/ozeebee)|[ozeebee](https://github.com/ozeebee)
 [<img alt="mattquinlan440" src="https://avatars2.githubusercontent.com/u/37664854?v=4&s=117" width="117">](https://github.com/mattquinlan440)|[mattquinlan440](https://github.com/mattquinlan440)
 [<img alt="juneeighteen" src="https://avatars2.githubusercontent.com/u/2677463?v=4&s=117" width="117">](https://github.com/juneeighteen)|[juneeighteen](https://github.com/juneeighteen)
+[<img alt="PoofyFoopy" src="https://avatars.githubusercontent.com/u/50299997?v=4&s=117" width="117">](https://github.com/PoofyFoopy)|[PoofyFoopy](https://github.com/PoofyFoopy)
