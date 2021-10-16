@@ -3,15 +3,15 @@
   "version": "1.5.0",
   "description": "A simple utility for executing cli commands with an assumed role.",
   "bin": {
-    "awsudo": "bin/awsudo"
+    "awsudo": "src/index.js"
   },
   "scripts": {
     "deploy-docker": "scripts/deploy-docker",
     "postversion": "scripts/postversion",
     "pretest": "npm outdated && npm audit",
     "preversion": "scripts/preversion",
-    "start": "bin/awsudo",
-    "test": "eslint bin/awsudo",
+    "start": "src/index.js",
+    "test": "eslint src/**/*.js",
     "update": "npx npm-check -uE"
   },
   "repository": {
@@ -43,11 +43,11 @@
   },
   "homepage": "https://github.com/meltwater/awsudo#readme",
   "dependencies": {
-    "aws-sdk": "2.1003.0",
+    "aws-sdk": "2.1009.0",
     "yargs": "17.2.1"
   },
   "devDependencies": {
-    "eslint": "7.32.0",
+    "eslint": "8.0.1",
     "mustache": "4.2.0"
   }
 }
