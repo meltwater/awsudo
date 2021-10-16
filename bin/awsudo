@@ -5,8 +5,10 @@ const { execSync } = require("child_process");
 
 const REMOVE_NODE_COMMANDS = 2;
 const ARN_PLUS_NEXT_COMMAND = 2;
+/*
 function parseArgvForAwsCommand() {
     const argvArray = Array.from(process.argv).slice(REMOVE_NODE_COMMANDS);
+    return { awsudoOptions: argvArray, awsCommand: null };
     const arn = argvArray.find((option) => option.startsWith('arn:'));
     const arnPosition = argvArray.indexOf(arn);
     const awsudoOptions = argvArray.slice(0, arnPosition + ARN_PLUS_NEXT_COMMAND);
@@ -17,10 +19,11 @@ function parseArgvForAwsCommand() {
         awsCommand
     };
 }
+*/
 
-const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
+const yargv = require("yargs")(process.argv.slice(2))
     .usage(
-        "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] <arn> <command..>",
+        "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] [arn] <command..>",
         "Assume an IAM role for the duration of a command",
         yargs => {
             yargs
@@ -68,6 +71,7 @@ const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
                     type: "string"
                 })
                 .positional("arn", {
+                    default: '',
                     describe: "ARN to assume",
                     type: "string"
                 })
@@ -78,13 +82,37 @@ const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
         }
     ).argv;
 
+const argv = (function adaptArgumentOptions(args) {
+    console.log('args', args);
+    let arn;
+    let command;
+
+    if (/^arn:aws:iam/.test(args.command[0])) {
+        arn = args.command[0];
+        command = args.command.slice(1);
+    }
+
+    if (!arn && !args.profile) {
+        console.log('Either a role arn or a profile must be specified');
+        process.exit(1);
+    }
+
+    if (arn && args.profile) {
+        console.log('Only one of a role arn or a profile can be specified');
+        process.exit(1);
+    }
+
+    return {
+        ...args,
+        arn,
+        command
+    };
+})(yargv);
+
+console.log('argv', argv);
+
 if (argv.verbose) {
     console.log(`Using RoleArn: ${argv.arn}`);
-}
-
-if (!/^arn:aws:iam/.test(argv.arn)) {
-    console.log(`Invalid role arn provided. Provided value: ${argv.arn}`);
-    process.exit(1);
 }
 
 (async () => {
@@ -94,10 +122,13 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
 
     try {
         const assumeRoleParameters = {
-            RoleArn: argv.arn,
             RoleSessionName: argv.sessionName,
             DurationSeconds: argv.duration
         };
+
+        if (argv.arn) {
+            assumeRoleParameters.RoleArn = argv.arn;
+        }
 
         if (argv.externalId) {
             assumeRoleParameters.ExternalId = argv.externalId;
@@ -138,18 +169,19 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
     if (process.platform === "win32") {
         command = commandArgs
             .map((arr) => `SET "${arr}"`)
-            .concat(parseArgvForAwsCommand().awsCommand.join(" "))
+            .concat(argv.command.join(" "))
             .join(" & ");
     }
     else {
-        command = commandArgs.concat(parseArgvForAwsCommand().awsCommand).join(" ");
+        command = commandArgs.concat(argv.command.join(" "));
     }
 
     if (argv.verbose) {
         console.log(`Running command ${command}`);
     }
 
-    execSync(command, { stdio: "inherit" });
+    console.log('Command to execute', command);
+    //execSync(command, { stdio: "inherit" });
 })().catch(err => {
     if (argv.verbose) {
         const maskedError = err.replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
