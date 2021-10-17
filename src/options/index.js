@@ -39,8 +39,6 @@ class Options {
         sessionName = DEFAULT_SESSION_NAME,
         verbose = DEFAULT_VERBOSE_VALUE
     }) {
-        // TODO: Type and range checks
-
         if (roleArn !== NO_ROLE_ARN && !isRoleArn(roleArn)) {
             throw new OptionsError(ERROR_INVALID_ROLE_ARN);
         }
