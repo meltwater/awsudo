@@ -26,8 +26,6 @@ const {
 } = require('./options');
 
 function extractPositionalOptions (positionals) {
-    // TODO: Validate is array
-
     const roleArn = isRoleArn(positionals[0]) ? positionals[0] : NO_ROLE_ARN;
     const command = roleArn !== NO_ROLE_ARN ? positionals.slice(1) : positionals;
 
@@ -98,7 +96,6 @@ const yargsv = require("yargs")(process.argv.slice(2))
         }
     ).argv;
 
-// TODO: Catch validation failures
 let options;
 try {
     options = new Options({
