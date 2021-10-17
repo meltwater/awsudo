@@ -3,13 +3,14 @@ const { isRoleArn } = require('../is-role-arn');
 const NO_EXTERNAL_ID = false;
 const NO_MFA_TOKEN = false;
 const NO_MFA_TOKEN_ARN = false;
+const NO_PROFILE = '';
 const NO_ROLE_ARN = '';
 
 const DEFAULT_DURATION = 900;
 const DEFAULT_EXTERNAL_ID = NO_EXTERNAL_ID;
 const DEFAULT_MFA_TOKEN = NO_MFA_TOKEN;
 const DEFAULT_MFA_TOKEN_ARN = NO_MFA_TOKEN_ARN;
-const DEFAULT_PROFILE = '';
+const DEFAULT_PROFILE = NO_PROFILE;
 const DEFAULT_ROLE_ARN = NO_ROLE_ARN;
 const DEFAULT_SESSION_NAME = 'RoleSession';
 const DEFAULT_VERBOSE_VALUE = false;
@@ -88,6 +89,7 @@ module.exports = {
     NO_EXTERNAL_ID,
     NO_MFA_TOKEN,
     NO_MFA_TOKEN_ARN,
+    NO_PROFILE,
     NO_ROLE_ARN,
 
     Options

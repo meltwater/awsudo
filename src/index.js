@@ -21,6 +21,7 @@ const {
     NO_EXTERNAL_ID,
     NO_MFA_TOKEN,
     NO_MFA_TOKEN_ARN,
+    NO_PROFILE,
     NO_ROLE_ARN,
 
     Options
@@ -111,8 +112,7 @@ catch (error) {
             break;
         case ERROR_INCOMPLETE_MFA_OPTIONS:
             console.error(`To use MFA you must supply both --mfa-token-arn and --mfa-token. Missing value: ${error.errorDetail}`);
-            return;
-        }
+            break;
         case ERROR_INVALID_ROLE_ARN:
             console.log(`Invalid role arn provided. Provided value: ${error.errorDetail}`);
             break;
@@ -127,9 +127,6 @@ catch (error) {
     process.exit(1);
 }
 
-console.log('options', options);
-
-// TODO: Separate CLI entry from awsudo core logic
 if (options.verbose) {
     if (options.roleArn !== NO_ROLE_ARN) {
         console.log(`Using RoleArn: ${options.roleArn}`);
@@ -150,21 +147,21 @@ if (options.verbose) {
             DurationSeconds: options.duration
         };
 
-        if (options.roleArn) {
+        if (options.roleArn !== NO_ROLE_ARN) {
             assumeRoleParameters.RoleArn = options.roleArn;
         }
 
-        if (options.externalId) {
+        if (options.externalId !== NO_EXTERNAL_ID) {
             assumeRoleParameters.ExternalId = options.externalId;
         }
 
-        if (options.mfaToken && options.mfaTokenArn) {
+        if (options.mfaToken !== NO_MFA_TOKEN && options.mfaTokenArn !== NO_MFA_TOKEN_ARN) {
             assumeRoleParameters.SerialNumber = options.mfaTokenArn;
             assumeRoleParameters.TokenCode = options.mfaToken;
             stsOptions.correctClockSkew = true;
         }
 
-        if (options.profile) {
+        if (options.profile !== NO_PROFILE) {
             AWS.config.credentials = new AWS.SharedIniFileCredentials({ profile: options.profile });
         }
 
