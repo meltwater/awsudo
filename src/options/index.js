@@ -1,6 +1,5 @@
 const { isRoleArn } = require('../is-role-arn');
 
-// TODO: Using boolean is weird for these
 const NO_EXTERNAL_ID = false;
 const NO_MFA_TOKEN = false;
 const NO_MFA_TOKEN_ARN = false;
@@ -14,6 +13,18 @@ const DEFAULT_PROFILE = '';
 const DEFAULT_ROLE_ARN = NO_ROLE_ARN;
 const DEFAULT_SESSION_NAME = 'RoleSession';
 const DEFAULT_VERBOSE_VALUE = false;
+
+const ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE = 'ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE';
+const ERROR_INVALID_ROLE_ARN = 'ERROR_INVALID_ROLE_ARN';
+const ERROR_MISSING_ROLE_ARN_AND_PROFILE = 'ERROR_MISSING_ROLE_ARN_AND_PROFILE';
+
+class OptionsError extends Error {
+    constructor (errorType, errorDetail = '') {
+        super('An error occurred constructing awsudo options');
+
+        this.errorType = errorType;
+    }
+}
 
 class Options {
     constructor ({
@@ -30,19 +41,15 @@ class Options {
         // TODO: Type and range checks
 
         if (roleArn !== NO_ROLE_ARN && !isRoleArn(roleArn)) {
-            // TODO: Convert to thrown error
-            console.log(`Invalid role arn provided. Provided value: ${roleArn}`);
-            process.exit(1);
+            throw new OptionsError(ERROR_INVALID_ROLE_ARN);
         }
 
         if (!roleArn && !profile) {
-            console.log('Either a role arn or a profile must be specified');
-            process.exit(1);
+            throw new OptionsError(ERROR_MISSING_ROLE_ARN_AND_PROFILE);
         }
 
         if (roleArn && profile) {
-            console.log('Only one of a role arn or a profile can be specified');
-            process.exit(1);
+            throw new OptionsError(ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE);
         }
 
         this.command = command;
@@ -66,6 +73,10 @@ module.exports = {
     DEFAULT_ROLE_ARN,
     DEFAULT_SESSION_NAME,
     DEFAULT_VERBOSE_VALUE,
+
+    ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE,
+    ERROR_INVALID_ROLE_ARN,
+    ERROR_MISSING_ROLE_ARN_AND_PROFILE,
 
     NO_EXTERNAL_ID,
     NO_MFA_TOKEN,

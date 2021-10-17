@@ -13,6 +13,10 @@ const {
     DEFAULT_SESSION_NAME,
     DEFAULT_VERBOSE_VALUE,
 
+    ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE,
+    ERROR_INVALID_ROLE_ARN,
+    ERROR_MISSING_ROLE_ARN_AND_PROFILE,
+
     NO_EXTERNAL_ID,
     NO_MFA_TOKEN,
     NO_MFA_TOKEN_ARN,
@@ -95,13 +99,35 @@ const yargsv = require("yargs")(process.argv.slice(2))
     ).argv;
 
 // TODO: Catch validation failures
-const options = new Options({
-    ...yargsv,
-    ...extractPositionalOptions(yargsv.command)
-});
+let options;
+try {
+    options = new Options({
+        ...yargsv,
+        ...extractPositionalOptions(yargsv.command)
+    });
+}
+catch (error) {
+    switch (error.errorType) {
+        case ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE:
+            console.log('Only one of a role arn or a profile can be specified');
+            break;
+        case ERROR_INVALID_ROLE_ARN:
+            console.log(`Invalid role arn provided. Provided value: ${error.errorDetail}`);
+            break;
+        case ERROR_MISSING_ROLE_ARN_AND_PROFILE:
+            console.log('Either a role arn or a profile must be specified');
+            break;
+        default:
+            console.log('An unknown error occurred.', error.message);
+            break;
+    }
+
+    process.exit(1);
+}
 
 console.log('options', options);
 
+// TODO: Separate CLI entry from awsudo core logic
 if (options.verbose) {
     if (options.roleArn !== NO_ROLE_ARN) {
         console.log(`Using RoleArn: ${options.roleArn}`);
@@ -176,8 +202,7 @@ if (options.verbose) {
         console.log(`Running command ${command}`);
     }
 
-    console.log('Command to execute', command);
-    //execSync(command, { stdio: "inherit" });
+    execSync(command, { stdio: "inherit" });
 })().catch(err => {
     if (options.verbose) {
         const maskedError = err.replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
