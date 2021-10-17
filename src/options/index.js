@@ -22,6 +22,7 @@ class OptionsError extends Error {
     constructor (errorType, errorDetail = '') {
         super('An error occurred constructing awsudo options');
 
+        this.errorDetail = errorDetail;
         this.errorType = errorType;
     }
 }
