@@ -14,6 +14,7 @@ const {
     DEFAULT_VERBOSE_VALUE,
 
     ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE,
+    ERROR_INCOMPLETE_MFA_OPTIONS,
     ERROR_INVALID_ROLE_ARN,
     ERROR_MISSING_ROLE_ARN_AND_PROFILE,
 
@@ -108,6 +109,10 @@ catch (error) {
         case ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE:
             console.log('Only one of a role arn or a profile can be specified');
             break;
+        case ERROR_INCOMPLETE_MFA_OPTIONS:
+            console.error(`To use MFA you must supply both --mfa-token-arn and --mfa-token. Missing value: ${error.errorDetail}`);
+            return;
+        }
         case ERROR_INVALID_ROLE_ARN:
             console.log(`Invalid role arn provided. Provided value: ${error.errorDetail}`);
             break;
@@ -157,10 +162,6 @@ if (options.verbose) {
             assumeRoleParameters.SerialNumber = options.mfaTokenArn;
             assumeRoleParameters.TokenCode = options.mfaToken;
             stsOptions.correctClockSkew = true;
-        } else if (options.mfaToken || options.mfaTokenArn) {
-            console.error('To use MFA you must supply both --mfa-token-arn and --mfa-token');
-            process.exitCode = -1;
-            return;
         }
 
         if (options.profile) {

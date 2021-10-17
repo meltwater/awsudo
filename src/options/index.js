@@ -15,6 +15,7 @@ const DEFAULT_SESSION_NAME = 'RoleSession';
 const DEFAULT_VERBOSE_VALUE = false;
 
 const ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE = 'ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE';
+const ERROR_INCOMPLETE_MFA_OPTIONS = 'ERROR_INCOMPLETE_MFA_OPTIONS';
 const ERROR_INVALID_ROLE_ARN = 'ERROR_INVALID_ROLE_ARN';
 const ERROR_MISSING_ROLE_ARN_AND_PROFILE = 'ERROR_MISSING_ROLE_ARN_AND_PROFILE';
 
@@ -39,6 +40,12 @@ class Options {
         sessionName = DEFAULT_SESSION_NAME,
         verbose = DEFAULT_VERBOSE_VALUE
     }) {
+        if ((mfaToken === NO_MFA_TOKEN && mfaTokenArn !== NO_MFA_TOKEN_ARN) ||
+            (mfaToken !== NO_MFA_TOKEN && mfaTokenArn === NO_MFA_TOKEN_ARN)) {
+            const missingOption = mfaToken === NO_MFA_TOKEN ? 'mfaToken' : 'mfaTokenArn';
+            throw new OptionsError(ERROR_INCOMPLETE_MFA_OPTIONS, missingOption);
+        }
+
         if (roleArn !== NO_ROLE_ARN && !isRoleArn(roleArn)) {
             throw new OptionsError(ERROR_INVALID_ROLE_ARN);
         }
@@ -74,6 +81,7 @@ module.exports = {
     DEFAULT_VERBOSE_VALUE,
 
     ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE,
+    ERROR_INCOMPLETE_MFA_OPTIONS,
     ERROR_INVALID_ROLE_ARN,
     ERROR_MISSING_ROLE_ARN_AND_PROFILE,
 
