@@ -181,7 +181,7 @@ if (options.verbose) {
         ["AWS_SESSION_TOKEN", credentials.SessionToken],
         ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
     ]
-        .map(arr => arr.join("="));
+    .map(arr => arr.join("="));
 
     if (process.platform === "win32") {
         command = commandArgs
@@ -200,7 +200,7 @@ if (options.verbose) {
     execSync(command, { stdio: "inherit" });
 })().catch(err => {
     if (options.verbose) {
-        const maskedError = err.replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
+        const maskedError = err.toString().replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
         console.log("Caught runtime exception:", maskedError);
     }
 
