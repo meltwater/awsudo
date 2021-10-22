@@ -139,6 +139,7 @@ if (options.verbose) {
 (async () => {
     let command;
     let credentials;
+    let awsEnvironmentSetCommands;
     const stsOptions = {};
 
     try {
@@ -161,27 +162,32 @@ if (options.verbose) {
             stsOptions.correctClockSkew = true;
         }
 
-        if (options.profile !== NO_PROFILE) {
-            AWS.config.credentials = new AWS.SharedIniFileCredentials({ profile: options.profile });
-        }
 
-        const sts = new AWS.STS(stsOptions);
-        const data = await sts
-            .assumeRole(assumeRoleParameters)
-            .promise();
-        credentials = data.Credentials;
+        if (options.profile === NO_PROFILE) {
+            const sts = new AWS.STS(stsOptions);
+            const data = await sts
+                .assumeRole(assumeRoleParameters)
+                .promise();
+            credentials = data.Credentials;
+
+            awsEnvironmentSetCommands = [
+                ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
+                ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
+                ["AWS_SESSION_TOKEN", credentials.SessionToken],
+                ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
+            ]
+            .map(arr => arr.join("="));
+        }
+        else {
+            AWS.config.credentials = new AWS.SharedIniFileCredentials({ profile: options.profile });
+            credentials = AWS.config.credentials;
+
+            awsEnvironmentSetCommands = [`AWS_PROFILE=${options.profile}`];
+        }
     } catch (err) {
         console.log("Exception while assuming role:", err);
         process.exit(1);
     }
-
-    const awsEnvironmentSetCommands = [
-        ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
-        ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
-        ["AWS_SESSION_TOKEN", credentials.SessionToken],
-        ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
-    ]
-    .map(arr => arr.join("="));
 
     if (process.platform === "win32") {
         command = awsEnvironmentSetCommands
