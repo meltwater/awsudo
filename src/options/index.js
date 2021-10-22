@@ -68,6 +68,8 @@ class Options {
         this.roleArn = roleArn;
         this.sessionName = sessionName;
         this.verbose = verbose;
+
+        Object.freeze(this);
     }
 }
 
