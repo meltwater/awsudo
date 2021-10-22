@@ -175,7 +175,7 @@ if (options.verbose) {
         process.exit(1);
     }
 
-    const commandArgs = [
+    const awsEnvironmentSetCommands = [
         ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
         ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
         ["AWS_SESSION_TOKEN", credentials.SessionToken],
@@ -184,13 +184,15 @@ if (options.verbose) {
     .map(arr => arr.join("="));
 
     if (process.platform === "win32") {
-        command = commandArgs
+        command = awsEnvironmentSetCommands
             .map((arr) => `SET "${arr}"`)
             .concat(options.command.join(" "))
             .join(" & ");
     }
     else {
-        command = commandArgs.concat(options.command.join(" "));
+        command = awsEnvironmentSetCommands
+            .concat(options.command)
+            .join(" ");
     }
 
     if (options.verbose) {
