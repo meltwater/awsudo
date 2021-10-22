@@ -175,22 +175,24 @@ if (options.verbose) {
         process.exit(1);
     }
 
-    const commandArgs = [
+    const awsEnvironmentSetCommands = [
         ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
         ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
         ["AWS_SESSION_TOKEN", credentials.SessionToken],
         ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
     ]
-        .map(arr => arr.join("="));
+    .map(arr => arr.join("="));
 
     if (process.platform === "win32") {
-        command = commandArgs
+        command = awsEnvironmentSetCommands
             .map((arr) => `SET "${arr}"`)
             .concat(options.command.join(" "))
             .join(" & ");
     }
     else {
-        command = commandArgs.concat(options.command.join(" "));
+        command = awsEnvironmentSetCommands
+            .concat(options.command)
+            .join(" ");
     }
 
     if (options.verbose) {
@@ -200,7 +202,7 @@ if (options.verbose) {
     execSync(command, { stdio: "inherit" });
 })().catch(err => {
     if (options.verbose) {
-        const maskedError = err.replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
+        const maskedError = err.toString().replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
         console.log("Caught runtime exception:", maskedError);
     }
 
