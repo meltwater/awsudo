@@ -2,25 +2,44 @@
 
 const AWS = require("aws-sdk");
 const { execSync } = require("child_process");
+const { isRoleArn } = require('./is-role-arn');
+const {
+    DEFAULT_DURATION,
+    DEFAULT_EXTERNAL_ID,
+    DEFAULT_MFA_TOKEN,
+    DEFAULT_MFA_TOKEN_ARN,
+    DEFAULT_PROFILE,
+    DEFAULT_ROLE_ARN,
+    DEFAULT_SESSION_NAME,
+    DEFAULT_VERBOSE_VALUE,
 
-const REMOVE_NODE_COMMANDS = 2;
-const ARN_PLUS_NEXT_COMMAND = 2;
-function parseArgvForAwsCommand() {
-    const argvArray = Array.from(process.argv).slice(REMOVE_NODE_COMMANDS);
-    const arn = argvArray.find((option) => option.startsWith('arn:'));
-    const arnPosition = argvArray.indexOf(arn);
-    const awsudoOptions = argvArray.slice(0, arnPosition + ARN_PLUS_NEXT_COMMAND);
-    const awsCommand = argvArray.slice(arnPosition + 1, argvArray.length);
+    ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE,
+    ERROR_INCOMPLETE_MFA_OPTIONS,
+    ERROR_INVALID_ROLE_ARN,
+    ERROR_MISSING_ROLE_ARN_AND_PROFILE,
+
+    NO_EXTERNAL_ID,
+    NO_MFA_TOKEN,
+    NO_MFA_TOKEN_ARN,
+    NO_PROFILE,
+    NO_ROLE_ARN,
+
+    Options
+} = require('./options');
+
+function extractPositionalOptions (positionals) {
+    const roleArn = isRoleArn(positionals[0]) ? positionals[0] : NO_ROLE_ARN;
+    const command = roleArn !== NO_ROLE_ARN ? positionals.slice(1) : positionals;
 
     return {
-        awsudoOptions,
-        awsCommand
+        command,
+        roleArn
     };
 }
 
-const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
+const yargsv = require("yargs")(process.argv.slice(2))
     .usage(
-        "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] <arn> <command..>",
+        "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] [arn] <command..>",
         "Assume an IAM role for the duration of a command",
         yargs => {
             yargs
@@ -28,46 +47,47 @@ const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
                     alias: "duration",
                     describe:
                         "The duration to assume this role in seconds. See https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html#API_AssumeRole_RequestParameters",
-                    default: 900,
+                    default: DEFAULT_DURATION,
                     type: "number"
                 })
                 .option("p", {
                     alias: "profile",
                     describe: "The profile used to assume the role",
-                    default: "",
+                    default: DEFAULT_PROFILE,
                     type: "string"
                 })
                 .option("n", {
                     alias: "session-name",
                     describe: "The role session name to use",
-                    default: "RoleSession",
+                    default: DEFAULT_SESSION_NAME,
                     type: "string"
                 })
                 .option("e", {
                     alias: "external-id",
                     describe: "The external id string used to authenticate role assumption",
-                    default: false,
+                    default: DEFAULT_EXTERNAL_ID,
                     type: "string"
                 })
                 .option("v", {
                     alias: "verbose",
                     describe: "Show debug information",
-                    default: false,
+                    default: DEFAULT_VERBOSE_VALUE,
                     type: "boolean"
                 })
                 .option("t", {
                     alias: "mfa-token",
                     describe: "Current MFA token [Must also supply mfa-token-arn]",
-                    default: false,
+                    default: DEFAULT_MFA_TOKEN,
                     type: "string"
                 })
                 .option("m", {
                     alias: "mfa-token-arn",
                     describe: "ARN for users MFA [Must also supply mfa-token]",
-                    default: false,
+                    default: DEFAULT_MFA_TOKEN_ARN,
                     type: "string"
                 })
                 .positional("arn", {
+                    default: DEFAULT_ROLE_ARN,
                     describe: "ARN to assume",
                     type: "string"
                 })
@@ -78,13 +98,42 @@ const argv = require("yargs")(parseArgvForAwsCommand().awsudoOptions)
         }
     ).argv;
 
-if (argv.verbose) {
-    console.log(`Using RoleArn: ${argv.arn}`);
+let options;
+try {
+    options = new Options({
+        ...yargsv,
+        ...extractPositionalOptions(yargsv.command)
+    });
+}
+catch (error) {
+    switch (error.errorType) {
+        case ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE:
+            console.log('Only one of a role arn or a profile can be specified');
+            break;
+        case ERROR_INCOMPLETE_MFA_OPTIONS:
+            console.error(`To use MFA you must supply both --mfa-token-arn and --mfa-token. Missing value: ${error.errorDetail}`);
+            break;
+        case ERROR_INVALID_ROLE_ARN:
+            console.log(`Invalid role arn provided. Provided value: ${error.errorDetail}`);
+            break;
+        case ERROR_MISSING_ROLE_ARN_AND_PROFILE:
+            console.log('Either a role arn or a profile must be specified');
+            break;
+        default:
+            console.log('An unknown error occurred.', error.message);
+            break;
+    }
+
+    process.exit(1);
 }
 
-if (!/^arn:aws:iam/.test(argv.arn)) {
-    console.log(`Invalid role arn provided. Provided value: ${argv.arn}`);
-    process.exit(1);
+if (options.verbose) {
+    if (options.roleArn !== NO_ROLE_ARN) {
+        console.log(`Using RoleArn: ${options.roleArn}`);
+    }
+    else {
+        console.log(`Using Profile: ${options.profile}`);
+    }
 }
 
 (async () => {
@@ -94,27 +143,26 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
 
     try {
         const assumeRoleParameters = {
-            RoleArn: argv.arn,
-            RoleSessionName: argv.sessionName,
-            DurationSeconds: argv.duration
+            RoleSessionName: options.sessionName,
+            DurationSeconds: options.duration
         };
 
-        if (argv.externalId) {
-            assumeRoleParameters.ExternalId = argv.externalId;
+        if (options.roleArn !== NO_ROLE_ARN) {
+            assumeRoleParameters.RoleArn = options.roleArn;
         }
 
-        if (argv.mfaToken && argv.mfaTokenArn) {
-            assumeRoleParameters.SerialNumber = argv.mfaTokenArn;
-            assumeRoleParameters.TokenCode = argv.mfaToken;
+        if (options.externalId !== NO_EXTERNAL_ID) {
+            assumeRoleParameters.ExternalId = options.externalId;
+        }
+
+        if (options.mfaToken !== NO_MFA_TOKEN && options.mfaTokenArn !== NO_MFA_TOKEN_ARN) {
+            assumeRoleParameters.SerialNumber = options.mfaTokenArn;
+            assumeRoleParameters.TokenCode = options.mfaToken;
             stsOptions.correctClockSkew = true;
-        } else if (argv.mfaToken || argv.mfaTokenArn) {
-            console.error('To use MFA you must supply both --mfa-token-arn and --mfa-token');
-            process.exitCode = -1;
-            return;
         }
 
-        if (argv.profile) {
-            AWS.config.credentials = new AWS.SharedIniFileCredentials({ profile: argv.profile });
+        if (options.profile !== NO_PROFILE) {
+            AWS.config.credentials = new AWS.SharedIniFileCredentials({ profile: options.profile });
         }
 
         const sts = new AWS.STS(stsOptions);
@@ -138,20 +186,20 @@ if (!/^arn:aws:iam/.test(argv.arn)) {
     if (process.platform === "win32") {
         command = commandArgs
             .map((arr) => `SET "${arr}"`)
-            .concat(parseArgvForAwsCommand().awsCommand.join(" "))
+            .concat(options.command.join(" "))
             .join(" & ");
     }
     else {
-        command = commandArgs.concat(parseArgvForAwsCommand().awsCommand).join(" ");
+        command = commandArgs.concat(options.command.join(" "));
     }
 
-    if (argv.verbose) {
+    if (options.verbose) {
         console.log(`Running command ${command}`);
     }
 
     execSync(command, { stdio: "inherit" });
 })().catch(err => {
-    if (argv.verbose) {
+    if (options.verbose) {
         const maskedError = err.replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
         console.log("Caught runtime exception:", maskedError);
     }
