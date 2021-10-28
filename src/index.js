@@ -127,68 +127,70 @@ catch (error) {
     process.exit(1);
 }
 
-if (options.verbose) {
+(async () => {
+    const assumeRoleParameters = {
+        RoleSessionName: options.sessionName,
+        DurationSeconds: options.duration
+    };
+
+    let roleArn = options.roleArn;
+    if (options.profile !== NO_PROFILE) {
+        if (options.verbose) {
+            console.log(`Using Profile: ${options.profile}`);
+        }
+
+        const profile = new AWS.SharedIniFileCredentials({ profile: options.profile });
+        roleArn = profile.roleArn;
+
+        // What about these potential profile values?
+        // external_id
+        // duration_seconds
+        // role_session_name
+        // mfa_serial
+        // region
+    }
+
     if (options.roleArn !== NO_ROLE_ARN) {
+        roleArn = options.roleArn;
+    }
+
+    assumeRoleParameters.RoleArn = roleArn;
+    if (options.verbose) {
         console.log(`Using RoleArn: ${options.roleArn}`);
     }
-    else {
-        console.log(`Using Profile: ${options.profile}`);
+
+    if (options.externalId !== NO_EXTERNAL_ID) {
+        assumeRoleParameters.ExternalId = options.externalId;
     }
-}
 
-(async () => {
-    let command;
-    let credentials;
-    let awsEnvironmentSetCommands;
     const stsOptions = {};
+    if (options.mfaToken !== NO_MFA_TOKEN && options.mfaTokenArn !== NO_MFA_TOKEN_ARN) {
+        assumeRoleParameters.SerialNumber = options.mfaTokenArn;
+        assumeRoleParameters.TokenCode = options.mfaToken;
+        stsOptions.correctClockSkew = true;
+    }
 
+    let awsEnvironmentSetCommands;
     try {
-        const assumeRoleParameters = {
-            RoleSessionName: options.sessionName,
-            DurationSeconds: options.duration
-        };
+        const sts = new AWS.STS(stsOptions);
+        const data = await sts
+            .assumeRole(assumeRoleParameters)
+            .promise();
+        const credentials = data.Credentials;
 
-        if (options.roleArn !== NO_ROLE_ARN) {
-            assumeRoleParameters.RoleArn = options.roleArn;
-        }
-
-        if (options.externalId !== NO_EXTERNAL_ID) {
-            assumeRoleParameters.ExternalId = options.externalId;
-        }
-
-        if (options.mfaToken !== NO_MFA_TOKEN && options.mfaTokenArn !== NO_MFA_TOKEN_ARN) {
-            assumeRoleParameters.SerialNumber = options.mfaTokenArn;
-            assumeRoleParameters.TokenCode = options.mfaToken;
-            stsOptions.correctClockSkew = true;
-        }
-
-
-        if (options.profile === NO_PROFILE) {
-            const sts = new AWS.STS(stsOptions);
-            const data = await sts
-                .assumeRole(assumeRoleParameters)
-                .promise();
-            credentials = data.Credentials;
-
-            awsEnvironmentSetCommands = [
-                ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
-                ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
-                ["AWS_SESSION_TOKEN", credentials.SessionToken],
-                ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
-            ]
-            .map(arr => arr.join("="));
-        }
-        else {
-            AWS.config.credentials = new AWS.SharedIniFileCredentials({ profile: options.profile });
-            credentials = AWS.config.credentials;
-
-            awsEnvironmentSetCommands = [`AWS_PROFILE=${options.profile}`];
-        }
+        awsEnvironmentSetCommands = [
+            ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
+            ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
+            ["AWS_SESSION_TOKEN", credentials.SessionToken],
+            ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
+        ]
+        .map(arr => arr.join("="));
     } catch (err) {
         console.log("Exception while assuming role:", err);
         process.exit(1);
     }
 
+    let command;
     if (process.platform === "win32") {
         command = awsEnvironmentSetCommands
             .map((arr) => `SET "${arr}"`)
