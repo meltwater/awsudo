@@ -1,9 +1,7 @@
 const AWS = require('aws-sdk');
 
 function getProfileOptionsValues (profile) {
-    console.log('!!!!!!!!!');
     const { roleArn } = new AWS.SharedIniFileCredentials({ profile });
-    console.log('roleArn', roleArn);
     const profiles = AWS.util.getProfilesFromSharedConfig(AWS.util.iniLoader);
 
     const {
