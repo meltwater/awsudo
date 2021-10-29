@@ -57,7 +57,7 @@ const yargsv = require("yargs")(process.argv.slice(2))
                     alias: "profile",
                     describe: "The profile used to assume the role. Any profile values will override default values. Any explicit options will override profile values.",
                     default: DEFAULT_PROFILE,
-                    choices: getProfileList()
+                    choices: [DEFAULT_PROFILE, ...getProfileList()]
                 })
                 .option("n", {
                     alias: "session-name",
