@@ -5,6 +5,7 @@ const { execSync } = require("child_process");
 const { getProfileList } = require('./get-profile-list');
 const { getProfileOptionsValues } = require('./get-profile-options-values');
 const { isRoleArn } = require('./is-role-arn');
+const { objectEntriesFilter } = require('./object-entries-filter');
 const {
     DEFAULT_DURATION,
     DEFAULT_EXTERNAL_ID,
@@ -37,12 +38,6 @@ function extractPositionalOptions (positionals) {
         command,
         roleArn
     };
-}
-
-function objectEntriesFilter (object, exclude) {
-    return Object.fromEntries(Object.entries(object)
-        .filter(([key, value]) => exclude[key] !== value)
-    );
 }
 
 const yargsv = require("yargs")(process.argv.slice(2))

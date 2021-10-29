@@ -1,4 +1,5 @@
 const AWS = require('aws-sdk');
+const { objectEntriesFilter } = require('../object-entries-filter');
 
 function getProfileOptionsValues (profile) {
     const { roleArn } = new AWS.SharedIniFileCredentials({ profile });
@@ -13,14 +14,13 @@ function getProfileOptionsValues (profile) {
         /* eslint-enable */
     } = profiles[profile];
 
-    return Object.fromEntries(Object.entries({
+    return objectEntriesFilter({
         duration,
         externalId,
         mfaTokenArn,
         roleArn,
         sessionName
-        // eslint-disable-next-line no-unused-vars
-    }).filter(([__, value]) => Boolean(value)));
+    }, {});
 }
 
 module.exports = {
