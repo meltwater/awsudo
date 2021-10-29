@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const { getProfileList } = require('./index');
 
-describe('Getting profie list', () => {
+describe('Getting profile list', () => {
     beforeEach(() => {
         spyOn(AWS.util, 'getProfilesFromSharedConfig').and.returnValue({});
     });
