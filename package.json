@@ -8,10 +8,11 @@
   "scripts": {
     "deploy-docker": "scripts/deploy-docker",
     "postversion": "scripts/postversion",
-    "pretest": "npm outdated && npm audit",
+    "pretest": "npm outdated && npm audit && eslint src/**/*.js",
     "preversion": "scripts/preversion",
     "start": "src/index.js",
-    "test": "eslint src/**/*.js",
+    "test": "JASMINE_CONFIG_PATH=jasmine.json jasmine",
+    "test:watch": "nodemon --ext js --watch src --exec npm test",
     "update": "npx npm-check -uE"
   },
   "repository": {
@@ -48,6 +49,8 @@
   },
   "devDependencies": {
     "eslint": "8.1.0",
-    "mustache": "4.2.0"
+    "jasmine": "3.10.0",
+    "mustache": "4.2.0",
+    "nodemon": "2.0.14"
   }
 }

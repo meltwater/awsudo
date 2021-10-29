@@ -3,7 +3,7 @@ const { isRoleArn } = require('../is-role-arn');
 const NO_EXTERNAL_ID = false;
 const NO_MFA_TOKEN = false;
 const NO_MFA_TOKEN_ARN = false;
-const NO_PROFILE = '';
+const NO_PROFILE = 'default';
 const NO_ROLE_ARN = '';
 
 const DEFAULT_DURATION = 900;
@@ -53,10 +53,6 @@ class Options {
 
         if (!roleArn && !profile) {
             throw new OptionsError(ERROR_MISSING_ROLE_ARN_AND_PROFILE);
-        }
-
-        if (roleArn && profile) {
-            throw new OptionsError(ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE);
         }
 
         this.command = command;

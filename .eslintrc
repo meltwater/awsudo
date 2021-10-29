@@ -1,6 +1,7 @@
 {
   // http://eslint.org/docs/rules/
   "env": {
+    "jasmine": true,
     "node": true
   },
   "parserOptions": {

@@ -2,6 +2,8 @@
 
 const AWS = require("aws-sdk");
 const { execSync } = require("child_process");
+const { getProfileList } = require('./get-profile-list');
+const { getProfileOptionsValues } = require('./get-profile-options-values');
 const { isRoleArn } = require('./is-role-arn');
 const {
     DEFAULT_DURATION,
@@ -37,6 +39,12 @@ function extractPositionalOptions (positionals) {
     };
 }
 
+function objectEntriesFilter (object, exclude) {
+    return Object.fromEntries(Object.entries(object)
+        .filter(([key, value]) => exclude[key] !== value)
+    );
+}
+
 const yargsv = require("yargs")(process.argv.slice(2))
     .usage(
         "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] [arn] <command..>",
@@ -52,9 +60,9 @@ const yargsv = require("yargs")(process.argv.slice(2))
                 })
                 .option("p", {
                     alias: "profile",
-                    describe: "The profile used to assume the role",
+                    describe: "The profile used to assume the role. Any profile values will override default values. Any explicit options will override profile values.",
                     default: DEFAULT_PROFILE,
-                    type: "string"
+                    choices: getProfileList()
                 })
                 .option("n", {
                     alias: "session-name",
@@ -98,66 +106,69 @@ const yargsv = require("yargs")(process.argv.slice(2))
         }
     ).argv;
 
+const specifiedOptions = objectEntriesFilter(yargsv, {
+        duration: DEFAULT_DURATION,
+        externalId: DEFAULT_EXTERNAL_ID,
+        mfaToken: DEFAULT_MFA_TOKEN,
+        mfaTokenArn: DEFAULT_MFA_TOKEN_ARN,
+        sessionName: DEFAULT_SESSION_NAME,
+        verbose: DEFAULT_VERBOSE_VALUE
+});
+
+const positionalOptions = objectEntriesFilter(extractPositionalOptions(yargsv.command), { roleArn: NO_ROLE_ARN });
+
 let options;
-try {
-    options = new Options({
-        ...yargsv,
-        ...extractPositionalOptions(yargsv.command)
-    });
-}
-catch (error) {
-    switch (error.errorType) {
-        case ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE:
-            console.log('Only one of a role arn or a profile can be specified');
-            break;
-        case ERROR_INCOMPLETE_MFA_OPTIONS:
-            console.error(`To use MFA you must supply both --mfa-token-arn and --mfa-token. Missing value: ${error.errorDetail}`);
-            break;
-        case ERROR_INVALID_ROLE_ARN:
-            console.log(`Invalid role arn provided. Provided value: ${error.errorDetail}`);
-            break;
-        case ERROR_MISSING_ROLE_ARN_AND_PROFILE:
-            console.log('Either a role arn or a profile must be specified');
-            break;
-        default:
-            console.log('An unknown error occurred.', error.message);
-            break;
-    }
-
-    process.exit(1);
-}
-
 (async () => {
-    const assumeRoleParameters = {
-        RoleSessionName: options.sessionName,
-        DurationSeconds: options.duration
-    };
+    const profileOptionsValues = yargsv.profile !== NO_PROFILE ? getProfileOptionsValues(yargsv.profile) : {};
 
-    let roleArn = options.roleArn;
-    if (options.profile !== NO_PROFILE) {
+    try {
+        options = new Options({
+            ...profileOptionsValues,
+            ...specifiedOptions,
+            ...positionalOptions
+        });
+
         if (options.verbose) {
-            console.log(`Using Profile: ${options.profile}`);
+            console.log('options', options);
+        }
+    }
+    catch (error) {
+        switch (error.errorType) {
+            case ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE:
+                console.log('Only one of a role arn or a profile can be specified');
+                break;
+            case ERROR_INCOMPLETE_MFA_OPTIONS:
+                console.error(`To use MFA you must supply both --mfa-token-arn and --mfa-token. Missing value: ${error.errorDetail}`);
+                break;
+            case ERROR_INVALID_ROLE_ARN:
+                console.log(`Invalid role arn provided. Provided value: ${error.errorDetail}`);
+                break;
+            case ERROR_MISSING_ROLE_ARN_AND_PROFILE:
+                console.log('Either a role arn or a profile must be specified');
+                break;
+            default:
+                console.log('An unknown error occurred.', error.message);
+                break;
         }
 
-        const profile = new AWS.SharedIniFileCredentials({ profile: options.profile });
-        roleArn = profile.roleArn;
-
-        // What about these potential profile values?
-        // external_id
-        // duration_seconds
-        // role_session_name
-        // mfa_serial
-        // region
+        process.exit(1);
     }
 
-    if (options.roleArn !== NO_ROLE_ARN) {
-        roleArn = options.roleArn;
-    }
-
-    assumeRoleParameters.RoleArn = roleArn;
     if (options.verbose) {
-        console.log(`Using RoleArn: ${options.roleArn}`);
+        if (options.roleArn !== NO_ROLE_ARN) {
+            console.log(`Using RoleArn: ${options.roleArn}`);
+        }
+
+        if (options.profile !== NO_PROFILE) {
+            console.log(`Using Profile: ${options.profile}`);
+        }
     }
+
+    const assumeRoleParameters = {
+        RoleSessionName: options.sessionName,
+        DurationSeconds: options.duration,
+        RoleArn: options.roleArn
+    };
 
     if (options.externalId !== NO_EXTERNAL_ID) {
         assumeRoleParameters.ExternalId = options.externalId;
@@ -209,7 +220,7 @@ catch (error) {
 
     execSync(command, { stdio: "inherit" });
 })().catch(err => {
-    if (options.verbose) {
+    if (yargsv.verbose) {
         const maskedError = err.toString().replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
         console.log("Caught runtime exception:", maskedError);
     }
