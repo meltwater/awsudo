@@ -101,19 +101,17 @@ const yargsv = require("yargs")(process.argv.slice(2))
         }
     ).argv;
 
-const specifiedOptions = objectEntriesFilter(yargsv, {
-        duration: DEFAULT_DURATION,
-        externalId: DEFAULT_EXTERNAL_ID,
-        mfaToken: DEFAULT_MFA_TOKEN,
-        mfaTokenArn: DEFAULT_MFA_TOKEN_ARN,
-        sessionName: DEFAULT_SESSION_NAME,
-        verbose: DEFAULT_VERBOSE_VALUE
-});
-
-const positionalOptions = objectEntriesFilter(extractPositionalOptions(yargsv.command), { roleArn: NO_ROLE_ARN });
-
 let options;
 (async () => {
+    const specifiedOptions = objectEntriesFilter(yargsv, {
+            duration: DEFAULT_DURATION,
+            externalId: DEFAULT_EXTERNAL_ID,
+            mfaToken: DEFAULT_MFA_TOKEN,
+            mfaTokenArn: DEFAULT_MFA_TOKEN_ARN,
+            sessionName: DEFAULT_SESSION_NAME,
+            verbose: DEFAULT_VERBOSE_VALUE
+    });
+    const positionalOptions = objectEntriesFilter(extractPositionalOptions(yargsv.command), { roleArn: NO_ROLE_ARN });
     const profileOptionsValues = yargsv.profile !== NO_PROFILE ? getProfileOptionsValues(yargsv.profile) : {};
 
     try {
