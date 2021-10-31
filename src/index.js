@@ -16,7 +16,6 @@ const {
     DEFAULT_SESSION_NAME,
     DEFAULT_VERBOSE_VALUE,
 
-    ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE,
     ERROR_INCOMPLETE_MFA_OPTIONS,
     ERROR_INVALID_ROLE_ARN,
     ERROR_MISSING_ROLE_ARN_AND_PROFILE,
@@ -29,6 +28,11 @@ const {
 
     Options
 } = require('./options');
+
+const EXIT_CODE = {
+    SUCCESS: 0,
+    UNKOWN: 1
+};
 
 function extractPositionalOptions (positionals) {
     const roleArn = isRoleArn(positionals[0]) ? positionals[0] : NO_ROLE_ARN;
@@ -127,9 +131,6 @@ let options;
     }
     catch (error) {
         switch (error.errorType) {
-            case ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE:
-                console.log('Only one of a role arn or a profile can be specified');
-                break;
             case ERROR_INCOMPLETE_MFA_OPTIONS:
                 console.error(`To use MFA you must supply both --mfa-token-arn and --mfa-token. Missing value: ${error.errorDetail}`);
                 break;
