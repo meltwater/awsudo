@@ -5,7 +5,7 @@ const { execSync } = require("child_process");
 const { getProfileList } = require('./get-profile-list');
 const { getProfileOptionsValues } = require('./get-profile-options-values');
 const { isRoleArn } = require('./is-role-arn');
-const { objectEntriesFilter } = require('./object-entries-filter');
+const { removeObjectEntries } = require('./object-entries-filter');
 const {
     DEFAULT_DURATION,
     DEFAULT_EXTERNAL_ID,
@@ -103,7 +103,7 @@ const yargsv = require("yargs")(process.argv.slice(2))
 
 let options;
 (async () => {
-    const specifiedOptions = objectEntriesFilter(yargsv, {
+    const specifiedOptions = removeObjectEntries(yargsv, {
             duration: DEFAULT_DURATION,
             externalId: DEFAULT_EXTERNAL_ID,
             mfaToken: DEFAULT_MFA_TOKEN,
@@ -111,7 +111,7 @@ let options;
             sessionName: DEFAULT_SESSION_NAME,
             verbose: DEFAULT_VERBOSE_VALUE
     });
-    const positionalOptions = objectEntriesFilter(extractPositionalOptions(yargsv.command), { roleArn: NO_ROLE_ARN });
+    const positionalOptions = removeObjectEntries(extractPositionalOptions(yargsv.command), { roleArn: NO_ROLE_ARN });
     const profileOptionsValues = yargsv.profile !== NO_PROFILE ? getProfileOptionsValues(yargsv.profile) : {};
 
     try {
