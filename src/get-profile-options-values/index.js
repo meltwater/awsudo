@@ -1,26 +1,23 @@
 const AWS = require('aws-sdk');
 const { removeObjectEntries } = require('../object-entries-filter');
 
+const UNDEFINED_PROFILE_OPTIONS = {};
+
 function getProfileOptionsValues (profile) {
     const { roleArn } = new AWS.SharedIniFileCredentials({ profile });
     const profiles = AWS.util.getProfilesFromSharedConfig(AWS.util.iniLoader);
 
-    const {
+    const profileOptions = {
         /* eslint-disable camelcase */
-        duration_seconds: duration,
-        external_id: externalId,
-        role_session_name: sessionName,
-        mfa_serial: mfaTokenArn,
+        duration: profiles[profile].duration_seconds,
+        externalId: profiles[profile].external_id,
+        sessionName: profiles[profile].role_session_name,
+        mfaTokenArn: profiles[profile].mfa_serial,
         /* eslint-enable */
-    } = profiles[profile];
+        roleArn
+    };
 
-    return removeObjectEntries({
-        duration,
-        externalId,
-        mfaTokenArn,
-        roleArn,
-        sessionName
-    }, {});
+    return removeObjectEntries(profileOptions, UNDEFINED_PROFILE_OPTIONS);
 }
 
 module.exports = {
