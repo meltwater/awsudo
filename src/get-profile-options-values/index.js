@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk');
-const { removeObjectEntries } = require('../object-entries-filter');
+const { removeObjectEntries } = require('../remove-object-entries');
 
 const UNDEFINED_PROFILE_OPTIONS = {};
 

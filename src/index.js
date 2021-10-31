@@ -5,7 +5,6 @@ const { execSync } = require("child_process");
 const { getProfileList } = require('./get-profile-list');
 const { getProfileOptionsValues } = require('./get-profile-options-values');
 const { isRoleArn } = require('./is-role-arn');
-const { removeObjectEntries } = require('./object-entries-filter');
 const {
     DEFAULT_DURATION,
     DEFAULT_EXTERNAL_ID,
@@ -28,6 +27,7 @@ const {
 
     Options
 } = require('./options');
+const { removeObjectEntries } = require('./remove-object-entries');
 
 const EXIT_CODE = {
     SUCCESS: 0,
