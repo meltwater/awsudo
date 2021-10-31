@@ -31,7 +31,14 @@ const {
 
 const EXIT_CODE = {
     SUCCESS: 0,
-    UNKOWN: 1
+    UNKOWN: 1,
+
+    OPTIONS_UNKNOWN: 10,
+    OPTIONS_INCOMPLETE_MFA: 11,
+    OPTIONS_INVALID_ROLE_ARN: 12,
+    OPTIONS_MISSING_ROLE_ARN_AND_PROFILE: 13,
+
+    ASSUME_UNKOWN: 20,
 };
 
 function extractPositionalOptions (positionals) {
@@ -130,22 +137,28 @@ let options;
         }
     }
     catch (error) {
+        let exitCode = EXIT_CODE.UNKOWN;
+
         switch (error.errorType) {
             case ERROR_INCOMPLETE_MFA_OPTIONS:
                 console.error(`To use MFA you must supply both --mfa-token-arn and --mfa-token. Missing value: ${error.errorDetail}`);
+                exitCode = EXIT_CODE.OPTIONS_INCOMPLETE_MFA;
                 break;
             case ERROR_INVALID_ROLE_ARN:
                 console.log(`Invalid role arn provided. Provided value: ${error.errorDetail}`);
+                exitCode = EXIT_CODE.OPTIONS_INVALID_ROLE_ARN;
                 break;
             case ERROR_MISSING_ROLE_ARN_AND_PROFILE:
                 console.log('Either a role arn or a profile must be specified');
+                exitCode = EXIT_CODE.OPTIONS_MISSING_ROLE_ARN_AND_PROFILE;
                 break;
             default:
                 console.log('An unknown error occurred.', error.message);
+                exitCode = EXIT_CODE.OPTIONS_UNKNOWN;
                 break;
         }
 
-        process.exit(1);
+        process.exit(exitCode);
     }
 
     if (options.verbose) {
@@ -192,7 +205,7 @@ let options;
         .map(arr => arr.join("="));
     } catch (err) {
         console.log("Exception while assuming role:", err);
-        process.exit(1);
+        process.exit(EXIT_CODE.ASSUME_UNKOWN);
     }
 
     let command;
@@ -219,5 +232,5 @@ let options;
         console.log("Caught runtime exception:", maskedError);
     }
 
-    process.exit(1);
+    process.exit(EXIT_CODE.UNKOWN);
 });
