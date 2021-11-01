@@ -105,4 +105,13 @@ describe('Getting profile options values', () => {
         expect(options).toEqual({
         });
     });
+
+    it('should return an empty option set if no profiles are available', () => {
+        spyOn(AWS, 'SharedIniFileCredentials').and.throwError();
+        AWS.util.getProfilesFromSharedConfig.and.throwError();
+
+        const result = getProfileOptionsValues();
+
+        expect(result).toEqual({});
+    });
 });

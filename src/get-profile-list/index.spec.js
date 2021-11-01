@@ -24,4 +24,12 @@ describe('Getting profile list', () => {
 
         expect(result).toEqual(Object.keys(profiles));
     });
+
+    it('should return an empty list if no profiles are available', () => {
+        AWS.util.getProfilesFromSharedConfig.and.throwError();
+
+        const result = getProfileList();
+
+        expect(result).toEqual([]);
+    });
 });

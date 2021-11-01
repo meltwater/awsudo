@@ -1,7 +1,12 @@
 const AWS = require('aws-sdk');
 
 function getProfileList () {
-    return Object.keys(AWS.util.getProfilesFromSharedConfig(AWS.util.iniLoader));
+    try {
+        return Object.keys(AWS.util.getProfilesFromSharedConfig(AWS.util.iniLoader));
+    }
+    catch (error) {
+        return [];
+    }
 }
 
 module.exports = {
