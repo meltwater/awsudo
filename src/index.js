@@ -2,6 +2,8 @@
 
 const AWS = require("aws-sdk");
 const { execSync } = require("child_process");
+const { getProfileList } = require('./get-profile-list');
+const { getProfileOptionsValues } = require('./get-profile-options-values');
 const { isRoleArn } = require('./is-role-arn');
 const {
     DEFAULT_DURATION,
@@ -13,7 +15,6 @@ const {
     DEFAULT_SESSION_NAME,
     DEFAULT_VERBOSE_VALUE,
 
-    ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE,
     ERROR_INCOMPLETE_MFA_OPTIONS,
     ERROR_INVALID_ROLE_ARN,
     ERROR_MISSING_ROLE_ARN_AND_PROFILE,
@@ -26,6 +27,19 @@ const {
 
     Options
 } = require('./options');
+const { removeObjectEntries } = require('./remove-object-entries');
+
+const EXIT_CODE = {
+    SUCCESS: 0,
+    UNKOWN: 1,
+
+    OPTIONS_UNKNOWN: 10,
+    OPTIONS_INCOMPLETE_MFA: 11,
+    OPTIONS_INVALID_ROLE_ARN: 12,
+    OPTIONS_MISSING_ROLE_ARN_AND_PROFILE: 13,
+
+    ASSUME_UNKOWN: 20,
+};
 
 function extractPositionalOptions (positionals) {
     const roleArn = isRoleArn(positionals[0]) ? positionals[0] : NO_ROLE_ARN;
@@ -52,9 +66,9 @@ const yargsv = require("yargs")(process.argv.slice(2))
                 })
                 .option("p", {
                     alias: "profile",
-                    describe: "The profile used to assume the role",
+                    describe: "The profile used to assume the role. Any profile values will override default values. Any explicit options will override profile values.",
                     default: DEFAULT_PROFILE,
-                    type: "string"
+                    choices: [DEFAULT_PROFILE, ...getProfileList()]
                 })
                 .option("n", {
                     alias: "session-name",
@@ -99,90 +113,102 @@ const yargsv = require("yargs")(process.argv.slice(2))
     ).argv;
 
 let options;
-try {
-    options = new Options({
-        ...yargsv,
-        ...extractPositionalOptions(yargsv.command)
-    });
-}
-catch (error) {
-    switch (error.errorType) {
-        case ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE:
-            console.log('Only one of a role arn or a profile can be specified');
-            break;
-        case ERROR_INCOMPLETE_MFA_OPTIONS:
-            console.error(`To use MFA you must supply both --mfa-token-arn and --mfa-token. Missing value: ${error.errorDetail}`);
-            break;
-        case ERROR_INVALID_ROLE_ARN:
-            console.log(`Invalid role arn provided. Provided value: ${error.errorDetail}`);
-            break;
-        case ERROR_MISSING_ROLE_ARN_AND_PROFILE:
-            console.log('Either a role arn or a profile must be specified');
-            break;
-        default:
-            console.log('An unknown error occurred.', error.message);
-            break;
-    }
-
-    process.exit(1);
-}
-
-if (options.verbose) {
-    if (options.roleArn !== NO_ROLE_ARN) {
-        console.log(`Using RoleArn: ${options.roleArn}`);
-    }
-    else {
-        console.log(`Using Profile: ${options.profile}`);
-    }
-}
-
 (async () => {
-    let command;
-    let credentials;
-    const stsOptions = {};
+    const specifiedOptions = removeObjectEntries(yargsv, {
+            duration: DEFAULT_DURATION,
+            externalId: DEFAULT_EXTERNAL_ID,
+            mfaToken: DEFAULT_MFA_TOKEN,
+            mfaTokenArn: DEFAULT_MFA_TOKEN_ARN,
+            sessionName: DEFAULT_SESSION_NAME,
+            verbose: DEFAULT_VERBOSE_VALUE
+    });
+    const positionalOptions = removeObjectEntries(extractPositionalOptions(yargsv.command), { roleArn: NO_ROLE_ARN });
+    const profileOptionsValues = yargsv.profile !== NO_PROFILE ? getProfileOptionsValues(yargsv.profile) : {};
 
     try {
-        const assumeRoleParameters = {
-            RoleSessionName: options.sessionName,
-            DurationSeconds: options.duration
-        };
+        options = new Options({
+            ...profileOptionsValues,
+            ...specifiedOptions,
+            ...positionalOptions
+        });
 
+        if (options.verbose) {
+            console.log('options', options);
+        }
+    }
+    catch (error) {
+        let exitCode = EXIT_CODE.UNKOWN;
+
+        switch (error.errorType) {
+            case ERROR_INCOMPLETE_MFA_OPTIONS:
+                console.error(`To use MFA you must supply both --mfa-token-arn and --mfa-token. Missing value: ${error.errorDetail}`);
+                exitCode = EXIT_CODE.OPTIONS_INCOMPLETE_MFA;
+                break;
+            case ERROR_INVALID_ROLE_ARN:
+                console.log(`Invalid role arn provided. Provided value: ${error.errorDetail}`);
+                exitCode = EXIT_CODE.OPTIONS_INVALID_ROLE_ARN;
+                break;
+            case ERROR_MISSING_ROLE_ARN_AND_PROFILE:
+                console.log('Either a role arn or a profile must be specified');
+                exitCode = EXIT_CODE.OPTIONS_MISSING_ROLE_ARN_AND_PROFILE;
+                break;
+            default:
+                console.log('An unknown error occurred.', error.message);
+                exitCode = EXIT_CODE.OPTIONS_UNKNOWN;
+                break;
+        }
+
+        process.exit(exitCode);
+    }
+
+    if (options.verbose) {
         if (options.roleArn !== NO_ROLE_ARN) {
-            assumeRoleParameters.RoleArn = options.roleArn;
-        }
-
-        if (options.externalId !== NO_EXTERNAL_ID) {
-            assumeRoleParameters.ExternalId = options.externalId;
-        }
-
-        if (options.mfaToken !== NO_MFA_TOKEN && options.mfaTokenArn !== NO_MFA_TOKEN_ARN) {
-            assumeRoleParameters.SerialNumber = options.mfaTokenArn;
-            assumeRoleParameters.TokenCode = options.mfaToken;
-            stsOptions.correctClockSkew = true;
+            console.log(`Using RoleArn: ${options.roleArn}`);
         }
 
         if (options.profile !== NO_PROFILE) {
-            AWS.config.credentials = new AWS.SharedIniFileCredentials({ profile: options.profile });
+            console.log(`Using Profile: ${options.profile}`);
         }
+    }
 
+    const assumeRoleParameters = {
+        RoleSessionName: options.sessionName,
+        DurationSeconds: options.duration,
+        RoleArn: options.roleArn
+    };
+
+    if (options.externalId !== NO_EXTERNAL_ID) {
+        assumeRoleParameters.ExternalId = options.externalId;
+    }
+
+    const stsOptions = {};
+    if (options.mfaToken !== NO_MFA_TOKEN && options.mfaTokenArn !== NO_MFA_TOKEN_ARN) {
+        assumeRoleParameters.SerialNumber = options.mfaTokenArn;
+        assumeRoleParameters.TokenCode = options.mfaToken;
+        stsOptions.correctClockSkew = true;
+    }
+
+    let awsEnvironmentSetCommands;
+    try {
         const sts = new AWS.STS(stsOptions);
         const data = await sts
             .assumeRole(assumeRoleParameters)
             .promise();
-        credentials = data.Credentials;
+        const credentials = data.Credentials;
+
+        awsEnvironmentSetCommands = [
+            ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
+            ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
+            ["AWS_SESSION_TOKEN", credentials.SessionToken],
+            ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
+        ]
+        .map(arr => arr.join("="));
     } catch (err) {
         console.log("Exception while assuming role:", err);
-        process.exit(1);
+        process.exit(EXIT_CODE.ASSUME_UNKOWN);
     }
 
-    const awsEnvironmentSetCommands = [
-        ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
-        ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
-        ["AWS_SESSION_TOKEN", credentials.SessionToken],
-        ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
-    ]
-    .map(arr => arr.join("="));
-
+    let command;
     if (process.platform === "win32") {
         command = awsEnvironmentSetCommands
             .map((arr) => `SET "${arr}"`)
@@ -201,10 +227,10 @@ if (options.verbose) {
 
     execSync(command, { stdio: "inherit" });
 })().catch(err => {
-    if (options.verbose) {
+    if (yargsv.verbose) {
         const maskedError = err.toString().replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
         console.log("Caught runtime exception:", maskedError);
     }
 
-    process.exit(1);
+    process.exit(EXIT_CODE.UNKOWN);
 });
