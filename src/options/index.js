@@ -15,7 +15,10 @@ const DEFAULT_ROLE_ARN = NO_ROLE_ARN;
 const DEFAULT_SESSION_NAME = 'RoleSession';
 const DEFAULT_VERBOSE_VALUE = false;
 
+<<<<<<< HEAD
 const ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE = 'ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE';
+=======
+>>>>>>> origin/master
 const ERROR_INCOMPLETE_MFA_OPTIONS = 'ERROR_INCOMPLETE_MFA_OPTIONS';
 const ERROR_INVALID_ROLE_ARN = 'ERROR_INVALID_ROLE_ARN';
 const ERROR_MISSING_ROLE_ARN_AND_PROFILE = 'ERROR_MISSING_ROLE_ARN_AND_PROFILE';
@@ -55,10 +58,13 @@ class Options {
             throw new OptionsError(ERROR_MISSING_ROLE_ARN_AND_PROFILE);
         }
 
+<<<<<<< HEAD
         if (roleArn && profile) {
             throw new OptionsError(ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE);
         }
 
+=======
+>>>>>>> origin/master
         this.command = command;
         this.duration = duration;
         this.externalId = externalId;
@@ -83,7 +89,10 @@ module.exports = {
     DEFAULT_SESSION_NAME,
     DEFAULT_VERBOSE_VALUE,
 
+<<<<<<< HEAD
     ERROR_CONFLICTING_ROLE_ARN_AND_PROFILE,
+=======
+>>>>>>> origin/master
     ERROR_INCOMPLETE_MFA_OPTIONS,
     ERROR_INVALID_ROLE_ARN,
     ERROR_MISSING_ROLE_ARN_AND_PROFILE,
