@@ -1,11 +1,10 @@
 {
   // http://eslint.org/docs/rules/
   "env": {
-    "jasmine": true,
     "node": true
   },
   "parserOptions": {
-    "ecmaVersion": 2020,
+    "ecmaVersion": 2017,
     "sourceType": "module"
   },
 
