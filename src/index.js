@@ -51,7 +51,13 @@ function extractPositionalOptions (positionals) {
     };
 }
 
-const yargsv = require("yargs")(process.argv.slice(2))
+function quoteCommandArguments (argv) {
+    const commandIndex = argv.findIndex(arg => !arg.startsWith('-') && !isRoleArn(arg));
+
+    return argv.slice(0, commandIndex).concat(`"${argv.slice(commandIndex).join(' ')}"`);
+}
+
+const yargsv = require("yargs")(quoteCommandArguments(process.argv.slice(2)))
     .usage(
         "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] [arn] <command..>",
         "Assume an IAM role for the duration of a command",
