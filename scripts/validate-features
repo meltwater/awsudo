@@ -106,11 +106,15 @@ assert_is "should display help text" \
     "$(src/index.js -h 2>&1 | grep -o 'Show help')" \
     "Show help"
 
-announce "Testing features with non-MFA authentication"
+announce "Testing access without MFA authentication"
 
 read -rp "Provide a non-MFA profile with which to test: " PROFILE_NO_MFA
 info "Extracting role ARN from profile for non-profile tests"
 ROLE_ARN_NO_MFA=$(src/index.js -v -p="$PROFILE_NO_MFA" true | grep "Using RoleArn" | cut -d ' ' -f3)
+
+info "Extracting AWS environment variables from credentials file for environment-only tests"
+PROFILE_NO_MFA_AWS_ACCESS_KEY_ID="$(grep aws_access_key_id ~/.aws/credentials | head -n1 | cut -d '=' -f2 | xargs)"
+PROFILE_NO_MFA_AWS_SECRET_ACCESS_KEY="$(grep aws_secret_access_key ~/.aws/credentials | head -n1 | cut -d '=' -f2 | xargs)"
 
 assert_contains "should successfully invoke aws with profile" \
     "$(src/index.js -p="$PROFILE_NO_MFA" aws sts get-caller-identity)" \
@@ -120,19 +124,11 @@ assert_contains "should successfully invoke aws with role ARN" \
     "$(src/index.js "$ROLE_ARN_NO_MFA" aws sts get-caller-identity)" \
     "UserId"
 
-assert_is_not "should pass commands any argument flags using a profile" \
-    "$(src/index.js -p="$PROFILE_NO_MFA" ls -l)" \
-    "$(src/index.js -p="$PROFILE_NO_MFA" ls)"
+assert_contains "should successfully invoke aws using only environment variables" \
+    "$(docker run -e AWS_ACCESS_KEY_ID=$PROFILE_NO_MFA_AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$PROFILE_NO_MFA_AWS_SECRET_ACCESS_KEY -v $PWD:/awsudo -w /awsudo awsudo/awsudo src/index.js $ROLE_ARN_NO_MFA aws sts get-caller-identity)" \
+    "UserId"
 
-assert_is_not "should pass commands any argument flags using a role ARN" \
-    "$(src/index.js "$ROLE_ARN_NO_MFA" ls -l)" \
-    "$(src/index.js -p="$PROFILE_NO_MFA" ls)"
-
-assert_contains "should not truncate npm run commands passed a -- divider" \
-    "$(src/index.js $ROLE_ARN_NO_MFA npm run test:echo-for-validate-features -- all args present)" \
-    "all args present"
-
-announce "Testing features with MFA authentication"
+announce "Testing access with MFA authentication"
 
 read -rp "Provide an MFA profile with which to test: " PROFILE_MFA
 info "Extracting role ARN from profile for non-profile tests"
@@ -151,5 +147,19 @@ read_mfa_token
 assert_contains "should successfully invoke aws with role ARN" \
     "$(src/index.js $ROLE_ARN_MFA -p=$PROFILE_MFA -t=$MFA_TOKEN aws sts get-caller-identity)" \
     "UserId"
+
+announce "Testing command processing"
+
+assert_is_not "should pass commands any argument flags using a profile" \
+    "$(src/index.js -p="$PROFILE_NO_MFA" ls -l)" \
+    "$(src/index.js -p="$PROFILE_NO_MFA" ls)"
+
+assert_is_not "should pass commands any argument flags using a role ARN" \
+    "$(src/index.js "$ROLE_ARN_NO_MFA" ls -l)" \
+    "$(src/index.js -p="$PROFILE_NO_MFA" ls)"
+
+assert_contains "should not truncate npm run commands passed a -- divider" \
+    "$(src/index.js $ROLE_ARN_NO_MFA npm run test:echo-for-validate-features -- all args present)" \
+    "all args present"
 
 announce "Tests completed successfully"
