@@ -72,7 +72,7 @@ assert_is_not "should pass commands any argument flags using a profile" \
     "$(src/index.js -p=$PROFILE_NO_MFA ls -l)" \
     "$(src/index.js -p=$PROFILE_NO_MFA ls)"
 
-assert_is_not "should pass commands any argument flags using a role ARn" \
+assert_is_not "should pass commands any argument flags using a role ARN" \
     "$(src/index.js $ROLE_ARN_NO_MFA ls -l)" \
     "$(src/index.js -p=$PROFILE_NO_MFA ls)"
 
