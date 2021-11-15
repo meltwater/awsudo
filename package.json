@@ -12,6 +12,7 @@
     "preversion": "scripts/preversion",
     "start": "src/index.js",
     "test": "JASMINE_CONFIG_PATH=jasmine.json jasmine",
+    "test:echo-for-validate-features": "echo $*",
     "test:watch": "nodemon --ext js --watch src --exec npm test",
     "update": "npx npm-check -uE"
   },

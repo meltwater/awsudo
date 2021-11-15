@@ -128,7 +128,9 @@ assert_is_not "should pass commands any argument flags using a role ARN" \
     "$(src/index.js "$ROLE_ARN_NO_MFA" ls -l)" \
     "$(src/index.js -p="$PROFILE_NO_MFA" ls)"
 
-# TODO: Test that profile inheritance
+assert_contains "should not truncate npm run commands passed a -- divider" \
+    "$(src/index.js $ROLE_ARN_NO_MFA npm run test:echo-for-validate-features -- all args present)" \
+    "all args present"
 
 announce "Testing features with MFA authentication"
 
