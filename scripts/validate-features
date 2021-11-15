@@ -1,8 +1,29 @@
 #!/bin/bash
 set -e
 
-TEST_VAULT_DIR="$PWD/tests/vault"
+##################################
+#       Logging Functions        #
+##################################
+announce() {
+    echo
+    info "** $* **" 1>&2
+}
 
+error() {
+    printf "[ERROR] %s\n" "$*" 1>&2
+}
+
+info() {
+    printf "[INFO] %s\n" "$*" 1>&2
+}
+
+progress() {
+    printf "." 1>&2
+}
+
+##################################
+#       Testing Functions        #
+##################################
 assert_is() {
     ASSERTION="$1"
     TEST="$2"
@@ -32,23 +53,39 @@ assert_is_not() {
     fi
 }
 
-announce() {
-    echo
-    info "** $* **"
+##################################
+# MFA Token Management Functions #
+##################################
+MFA_TOKEN=
+LAST_MFA_EXPIRATION=0
+
+get_mfa_expiration() {
+    NEXT_MINUTE=$(docker run ubuntu date --date 'next minute' '+%H:%M:00')
+
+    NEXT_MINUTE_SECONDS=$(docker run ubuntu date -d "$NEXT_MINUTE" '+%s')
+    PREVIOUS_HALF_MINUTE_SECONDS=$(( $NEXT_MINUTE_SECONDS - 30))
+
+    if [ "$PREVIOUS_HALF_MINUTE_SECONDS" -gt "$(date '+%s')" ]; then
+        echo "$PREVIOUS_HALF_MINUTE_SECONDS"
+    else
+        echo "$NEXT_MINUTE_SECONDS"
+    fi
 }
 
-error() {
-    printf "[ERROR] %s\n" "$*"
+read_mfa_token() {
+    MFA_TTL=$(( $LAST_MFA_EXPIRATION - $(date '+%s') ))
+    if [ "$MFA_TTL" -gt 0 ]; then
+        info "Waiting $MFA_TTL seconds until previous MFA token expires..."
+        sleep "$MFA_TTL"
+    fi
+
+    read -rp "Provide the current MFA token: " MFA_TOKEN
+    LAST_MFA_EXPIRATION="$(get_mfa_expiration)"
 }
 
-info() {
-    printf "[INFO] %s\n" "$*"
-}
-
-progress() {
-    printf "."
-}
-
+#################################
+#       Start Test Suite        #
+#################################
 announce "Testing unauthenticated features"
 assert_is "should display help text" \
     "$(src/index.js -h 2>&1 | grep -o 'Show help')" \
@@ -56,31 +93,58 @@ assert_is "should display help text" \
 
 announce "Testing features with non-MFA authentication"
 
-read -p "Provide a non-MFA profile with which to test: " PROFILE_NO_MFA
+read -rp "Provide a non-MFA profile with which to test: " PROFILE_NO_MFA
 info "Extracting role ARN from profile for non-profile tests"
-ROLE_ARN_NO_MFA=$(src/index.js -v -p=$PROFILE_NO_MFA true | grep "Using RoleArn" | cut -d ' ' -f3)
+ROLE_ARN_NO_MFA=$(src/index.js -v -p="$PROFILE_NO_MFA" true | grep "Using RoleArn" | cut -d ' ' -f3)
 
 assert_is "should successfully invoke aws with profile" \
-    "$(src/index.js -p=$PROFILE_NO_MFA aws sts get-caller-identity | grep -o 'UserId')" \
+    "$(src/index.js -p="$PROFILE_NO_MFA" aws sts get-caller-identity | grep -o 'UserId')" \
     "UserId"
 
 assert_is "should successfully invoke aws with role ARN" \
-    "$(src/index.js $ROLE_ARN_NO_MFA aws sts get-caller-identity | grep -o 'UserId')" \
+    "$(src/index.js "$ROLE_ARN_NO_MFA" aws sts get-caller-identity | grep -o 'UserId')" \
     "UserId"
 
 assert_is_not "should pass commands any argument flags using a profile" \
-    "$(src/index.js -p=$PROFILE_NO_MFA ls -l)" \
-    "$(src/index.js -p=$PROFILE_NO_MFA ls)"
+    "$(src/index.js -p="$PROFILE_NO_MFA" ls -l)" \
+    "$(src/index.js -p="$PROFILE_NO_MFA" ls)"
 
 assert_is_not "should pass commands any argument flags using a role ARN" \
-    "$(src/index.js $ROLE_ARN_NO_MFA ls -l)" \
-    "$(src/index.js -p=$PROFILE_NO_MFA ls)"
+    "$(src/index.js "$ROLE_ARN_NO_MFA" ls -l)" \
+    "$(src/index.js -p="$PROFILE_NO_MFA" ls)"
 
 announce "Testing features with MFA authentication"
 
-read -p "Provide an MFA profile with which to test: " PROFILE_MFA
+read -rp "Provide an MFA profile with which to test: " PROFILE_MFA
 info "Extracting role ARN from profile for non-profile tests"
-read -p "Provide the current MFA token: " MFA_TOKEN
-ROLE_ARN_MFA=$(src/index.js -p=$PROFILE_MFA -t=$MFA_TOKEN true | grep "Using RoleArn" | cut -d ' ' -f3)
+read_mfa_token
+ROLE_ARN_MFA=$(src/index.js -p="$PROFILE_MFA" -t="$MFA_TOKEN" true | grep "Using RoleArn" | cut -d ' ' -f3)
+
+info "Proceeding to individual tests"
+info "Note: each test will require a new MFA token"
+
+read_mfa_token
+assert_is "should successfully invoke aws with profile" \
+    "$(src/index.js -p="$PROFILE_MFA" -t="$MFA_TOKEN" aws sts get-caller-identity | grep -o 'UserId')" \
+    "UserId"
+
+# TODO: Test that profile sets default
+
+read_mfa_token
+assert_is "should successfully invoke aws with role ARN" \
+    "$(src/index.js $ROLE_ARN_MFA -p=$PROFILE_MFA -t=$MFA_TOKEN aws sts get-caller-identity | grep -o 'UserId')" \
+    "UserId"
+
+exit 0
+# TODO: Break into separate MFA commands
+MFA_TOKEN="$(read_mfa_token)"
+assert_is_not "should pass commands any argument flags using a profile" \
+    "$(src/index.js -p="$PROFILE_MFA" -t=$MFA_TOKEN ls -l)" \
+    "$(src/index.js -p="$PROFILE_MFA" ls)"
+
+MFA_TOKEN="$(read_mfa_token)"
+assert_is_not "should pass commands any argument flags using a role ARN" \
+    "$(src/index.js "$ROLE_ARN_MFA" -t=$MFA_TOKEN ls -l)" \
+    "$(src/index.js -p="$PROFILE_MFA" ls)"
 
 announce "Tests completed successfully"
