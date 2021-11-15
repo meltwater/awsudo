@@ -24,6 +24,21 @@ progress() {
 ##################################
 #       Testing Functions        #
 ##################################
+assert_contains() {
+    ASSERTION="$1"
+    TEST="$2"
+    CHECK="$3"
+
+    if echo "$TEST" | grep "$CHECK" > /dev/null ; then
+        progress
+    else
+        echo
+        error "$ASSERTION"
+        error "Expected \"$TEST\" to contain \"$CHECK\""
+        exit 1
+    fi
+}
+
 assert_is() {
     ASSERTION="$1"
     TEST="$2"
@@ -97,12 +112,12 @@ read -rp "Provide a non-MFA profile with which to test: " PROFILE_NO_MFA
 info "Extracting role ARN from profile for non-profile tests"
 ROLE_ARN_NO_MFA=$(src/index.js -v -p="$PROFILE_NO_MFA" true | grep "Using RoleArn" | cut -d ' ' -f3)
 
-assert_is "should successfully invoke aws with profile" \
-    "$(src/index.js -p="$PROFILE_NO_MFA" aws sts get-caller-identity | grep -o 'UserId')" \
+assert_contains "should successfully invoke aws with profile" \
+    "$(src/index.js -p="$PROFILE_NO_MFA" aws sts get-caller-identity)" \
     "UserId"
 
-assert_is "should successfully invoke aws with role ARN" \
-    "$(src/index.js "$ROLE_ARN_NO_MFA" aws sts get-caller-identity | grep -o 'UserId')" \
+assert_contains "should successfully invoke aws with role ARN" \
+    "$(src/index.js "$ROLE_ARN_NO_MFA" aws sts get-caller-identity)" \
     "UserId"
 
 assert_is_not "should pass commands any argument flags using a profile" \
@@ -112,6 +127,8 @@ assert_is_not "should pass commands any argument flags using a profile" \
 assert_is_not "should pass commands any argument flags using a role ARN" \
     "$(src/index.js "$ROLE_ARN_NO_MFA" ls -l)" \
     "$(src/index.js -p="$PROFILE_NO_MFA" ls)"
+
+# TODO: Test that profile inheritance
 
 announce "Testing features with MFA authentication"
 
@@ -124,27 +141,13 @@ info "Proceeding to individual tests"
 info "Note: each test will require a new MFA token"
 
 read_mfa_token
-assert_is "should successfully invoke aws with profile" \
-    "$(src/index.js -p="$PROFILE_MFA" -t="$MFA_TOKEN" aws sts get-caller-identity | grep -o 'UserId')" \
+assert_contains "should successfully invoke aws with profile" \
+    "$(src/index.js -p="$PROFILE_MFA" -t="$MFA_TOKEN" aws sts get-caller-identity)" \
     "UserId"
-
-# TODO: Test that profile sets default
 
 read_mfa_token
-assert_is "should successfully invoke aws with role ARN" \
-    "$(src/index.js $ROLE_ARN_MFA -p=$PROFILE_MFA -t=$MFA_TOKEN aws sts get-caller-identity | grep -o 'UserId')" \
+assert_contains "should successfully invoke aws with role ARN" \
+    "$(src/index.js $ROLE_ARN_MFA -p=$PROFILE_MFA -t=$MFA_TOKEN aws sts get-caller-identity)" \
     "UserId"
-
-exit 0
-# TODO: Break into separate MFA commands
-MFA_TOKEN="$(read_mfa_token)"
-assert_is_not "should pass commands any argument flags using a profile" \
-    "$(src/index.js -p="$PROFILE_MFA" -t=$MFA_TOKEN ls -l)" \
-    "$(src/index.js -p="$PROFILE_MFA" ls)"
-
-MFA_TOKEN="$(read_mfa_token)"
-assert_is_not "should pass commands any argument flags using a role ARN" \
-    "$(src/index.js "$ROLE_ARN_MFA" -t=$MFA_TOKEN ls -l)" \
-    "$(src/index.js -p="$PROFILE_MFA" ls)"
 
 announce "Tests completed successfully"
