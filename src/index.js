@@ -31,14 +31,14 @@ const { removeObjectEntries } = require('./remove-object-entries');
 
 const EXIT_CODE = {
     SUCCESS: 0,
-    UNKOWN: 1,
+    UNKNOWN: 1,
 
     OPTIONS_UNKNOWN: 10,
     OPTIONS_INCOMPLETE_MFA: 11,
     OPTIONS_INVALID_ROLE_ARN: 12,
     OPTIONS_MISSING_ROLE_ARN_AND_PROFILE: 13,
 
-    ASSUME_UNKOWN: 20,
+    ASSUME_UNKNOWN: 20,
 };
 
 function extractPositionalOptions (positionals) {
@@ -147,7 +147,7 @@ let options;
         }
     }
     catch (error) {
-        let exitCode = EXIT_CODE.UNKOWN;
+        let exitCode = EXIT_CODE.UNKNOWN;
 
         switch (error.errorType) {
             case ERROR_INCOMPLETE_MFA_OPTIONS:
@@ -215,7 +215,7 @@ let options;
         .map(arr => arr.join("="));
     } catch (err) {
         console.log("Exception while assuming role:", err);
-        process.exit(EXIT_CODE.ASSUME_UNKOWN);
+        process.exit(EXIT_CODE.ASSUME_UNKNOWN);
     }
 
     let command;
@@ -242,5 +242,5 @@ let options;
         console.log("Caught runtime exception:", maskedError);
     }
 
-    process.exit(EXIT_CODE.UNKOWN);
+    process.exit(EXIT_CODE.UNKNOWN);
 });
