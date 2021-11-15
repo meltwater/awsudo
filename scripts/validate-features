@@ -58,7 +58,7 @@ announce "Testing features with non-MFA authentication"
 
 read -p "Provide a non-MFA profile with which to test: " PROFILE_NO_MFA
 info "Extracting role ARN from profile for non-profile tests"
-ROLE_ARN_NO_MFA=$(src/index.js -v -p=legion-dev true | grep "Using RoleArn" | cut -d ' ' -f3)
+ROLE_ARN_NO_MFA=$(src/index.js -v -p=$PROFILE_NO_MFA true | grep "Using RoleArn" | cut -d ' ' -f3)
 
 assert_is "should successfully invoke aws with profile" \
     "$(src/index.js -p=$PROFILE_NO_MFA aws sts get-caller-identity | grep -o 'UserId')" \
@@ -75,5 +75,12 @@ assert_is_not "should pass commands any argument flags using a profile" \
 assert_is_not "should pass commands any argument flags using a role ARN" \
     "$(src/index.js $ROLE_ARN_NO_MFA ls -l)" \
     "$(src/index.js -p=$PROFILE_NO_MFA ls)"
+
+announce "Testing features with MFA authentication"
+
+read -p "Provide an MFA profile with which to test: " PROFILE_MFA
+info "Extracting role ARN from profile for non-profile tests"
+read -p "Provide the current MFA token: " MFA_TOKEN
+ROLE_ARN_MFA=$(src/index.js -p=$PROFILE_MFA -t=$MFA_TOKEN true | grep "Using RoleArn" | cut -d ' ' -f3)
 
 announce "Tests completed successfully"
