@@ -149,7 +149,13 @@ deploy:
 
 ## Prerequisites
 
-- Appropriate [environment variables must be set](https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html) for aws-sdk to work.
+### Valid AWS Configuration
+
+Any one of the following is required for awsudo to function correctly
+
+- Appropriate [environment variables are set](https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html) for aws-sdk to work
+- A default profile (e.g. created using `aws configure`)
+- A set of any named profiles you would like to use
 
 ## Contributing
 
