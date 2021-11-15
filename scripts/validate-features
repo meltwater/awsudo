@@ -1,0 +1,79 @@
+#!/bin/bash
+set -e
+
+TEST_VAULT_DIR="$PWD/tests/vault"
+
+assert_is() {
+    ASSERTION="$1"
+    TEST="$2"
+    CHECK="$3"
+
+    if [ "$TEST" == "$CHECK" ]; then
+        progress
+    else
+        echo
+        error "$ASSERTION"
+        error "Expected \"$TEST\" to equal \"$CHECK\""
+        exit 1
+    fi
+}
+
+assert_is_not() {
+    ASSERTION="$1"
+    TEST="$2"
+    CHECK="$3"
+
+    if [ "$TEST" != "$CHECK" ]; then
+        progress
+    else
+        error "$ASSERTION"
+        error "Expected \"$TEST\" NOT to equal \"$CHECK\""
+        exit 1
+    fi
+}
+
+announce() {
+    echo
+    info "** $* **"
+}
+
+error() {
+    printf "[ERROR] %s\n" "$*"
+}
+
+info() {
+    printf "[INFO] %s\n" "$*"
+}
+
+progress() {
+    printf "."
+}
+
+announce "Testing unauthenticated features"
+assert_is "should display help text" \
+    "$(src/index.js -h 2>&1 | grep -o 'Show help')" \
+    "Show help"
+
+announce "Testing features with non-MFA authentication"
+
+read -p "Provide a non-MFA profile with which to test: " PROFILE_NO_MFA
+info "Extracting role ARN from profile for non-profile tests"
+ROLE_ARN_NO_MFA=$(src/index.js -v -p=legion-dev true | grep "Using RoleArn" | cut -d ' ' -f3)
+
+assert_is "should successfully invoke aws with profile" \
+    "$(src/index.js -p=$PROFILE_NO_MFA aws sts get-caller-identity | grep -o 'UserId')" \
+    "UserId"
+
+assert_is "should successfully invoke aws with role ARN" \
+    "$(src/index.js $ROLE_ARN_NO_MFA aws sts get-caller-identity | grep -o 'UserId')" \
+    "UserId"
+
+assert_is_not "should pass commands any argument flags using a profile" \
+    "$(src/index.js -p=$PROFILE_NO_MFA ls -l)" \
+    "$(src/index.js -p=$PROFILE_NO_MFA ls)"
+
+assert_is_not "should pass commands any argument flags using a role ARn" \
+    "$(src/index.js $ROLE_ARN_NO_MFA ls -l)" \
+    "$(src/index.js -p=$PROFILE_NO_MFA ls)"
+
+announce "Tests completed successfully"
