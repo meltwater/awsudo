@@ -54,6 +54,10 @@ function extractPositionalOptions (positionals) {
 function quoteCommandArguments (argv) {
     const commandIndex = argv.findIndex(arg => !arg.startsWith('-') && !isRoleArn(arg));
 
+    if (commandIndex === -1) {
+        return argv;
+    }
+
     return argv.slice(0, commandIndex).concat(`"${argv.slice(commandIndex).join(' ')}"`);
 }
 
