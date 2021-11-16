@@ -157,6 +157,32 @@ Any one of the following is required for awsudo to function correctly
 - A default profile (e.g. created using `aws configure`)
 - A set of any named profiles you would like to use
 
+## Developing / Testing
+
+### validate-features
+
+This is an included script which validates significant features of awsudo as
+functioning properly in a true running context.
+
+Not every feature that exists is, or should be, exercised by this tool. If a
+unit test can adequately validate a given behavior, that is preferred.
+
+Before running, it will check for prerequisites, but for the sake of planning
+they are:
+
+- Docker
+- A post-`aws configure` environment with
+    - at least one profile
+    - at least one profile requiring an MFA
+
+To execute the tool, run the following from the project root:
+
+```
+scripts/validate-features
+```
+
+it will prompt for profile names and MFA tokens as necessary.
+
 ## Contributing
 
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/meltwater/awsudo)
