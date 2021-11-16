@@ -164,7 +164,7 @@ read_mfa_token() {
 }
 
 #################################
-#      XXXXX        #
+#   Input Validation Functions  #
 #################################
 is_invalid_profile() {
     PROFILE=$1
