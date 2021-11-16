@@ -164,6 +164,15 @@ read_mfa_token() {
 }
 
 #################################
+#      XXXXX        #
+#################################
+is_invalid_profile() {
+    PROFILE=$1
+
+    [ -z "$PROFILE" ] || ! grep "$PROFILE" ~/.aws/credentials ~/.aws/config > /dev/null
+}
+
+#################################
 #      Prerequisite check       #
 #################################
 announce "Checking for prerequisites"
@@ -183,7 +192,9 @@ assert_is "should display help text" \
 
 announce "Testing access without MFA authentication"
 
-read -rp "Provide a non-MFA profile with which to test: " PROFILE_NO_MFA
+while is_invalid_profile $PROFILE_NO_MFA; do
+    read -rp "Provide a valid non-MFA profile with which to test: " PROFILE_NO_MFA
+done
 info "Extracting role ARN from profile for non-profile tests"
 ROLE_ARN_NO_MFA=$(src/index.js -v -p="$PROFILE_NO_MFA" true | grep "Using RoleArn" | cut -d ' ' -f3)
 
@@ -205,7 +216,9 @@ assert_contains "should successfully invoke aws using only environment variables
 
 announce "Testing access with MFA authentication"
 
-read -rp "Provide an MFA profile with which to test: " PROFILE_MFA
+while is_invalid_profile $PROFILE_MFA; do
+    read -rp "Provide a valid profile that requires MFA with which to test: " PROFILE_MFA
+done
 info "Extracting role ARN from profile for non-profile tests"
 read_mfa_token
 ROLE_ARN_MFA=$(src/index.js -p="$PROFILE_MFA" -t="$MFA_TOKEN" true | grep "Using RoleArn" | cut -d ' ' -f3)
