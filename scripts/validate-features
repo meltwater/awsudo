@@ -1,22 +1,65 @@
 #!/bin/bash
 set -e
 
+# Description:
+#  This validates significant features of awsudo as function properly is
+#  a true running context.
+#
+# Organization:
+#  1. Supporting functions to facilitate output, testing, and complex
+#     operations (e.g. soliciting MFA tokens and managing their life cycle
+#  2. Check for prerequisites needed to run this script
+#  3. The test suites, ordered from the most fundamental and simplistic to
+#     more advanced behavior
+#
+# Contributing:
+#  Not every feature that exists should be exercised by this tool. If a
+#  unit test can adequately validate a given behavior, that should be
+#  preferred.
+#
+#  This should be reserved for a high-level validation of the overall
+#  ability of awsudo to run successfully. It is perfectly acceptable for
+#  this script to shrink over time as better ways of testing functionality
+#  emerge.
+
 ##################################
 #       Logging Functions        #
 ##################################
+
+# Display a message as a banner on a new line
+#
+# Usage: announce [message]
+#
+# Example:
+#  announce "Let the tests begin"
 announce() {
     echo
     info "** $* **" 1>&2
 }
 
+# Display a message with an error label on its own line
+#
+# Usage: error [message]
+#
+# Example:
+#  error "Let the tests begin"
 error() {
     printf "[ERROR] %s\n" "$*" 1>&2
 }
 
+# Display a message with an error label on its own line
+#
+# Usage: info [message]
+#
+# Example:
+#  info "Let the tests begin"
 info() {
     printf "[INFO] %s\n" "$*" 1>&2
 }
 
+# Display an indicator of progress so the user is aware
+# of ongoing activity without overwhelming them with
+# status text
 progress() {
     printf "." 1>&2
 }
@@ -24,6 +67,14 @@ progress() {
 ##################################
 #       Testing Functions        #
 ##################################
+
+# Assert that one string contains another.
+# Show progress on success, exit with an error on failure.
+#
+# Usage: assert_contains [phrase to display on failure] [command output] [string that output should contain]
+#
+# Example:
+#  assert_contains "should say hello" "$(echo hello world)" "hello"
 assert_contains() {
     ASSERTION="$1"
     TEST="$2"
@@ -39,6 +90,13 @@ assert_contains() {
     fi
 }
 
+# Assert that one string equals another.
+# Show progress on success, exit with an error on failure.
+#
+# Usage: [phrase to display on failure] [command output] [string that output should contain
+#
+# Example:
+#  assert_is "should say hello" "$(echo hello)" "hello"
 assert_is() {
     ASSERTION="$1"
     TEST="$2"
@@ -54,6 +112,13 @@ assert_is() {
     fi
 }
 
+# Assert that one string does not equal another.
+# Show progress on success, exit with an error on failure.
+#
+# Usage: [phrase to display on failure] [command output] [string that output should contain
+#
+# Example:
+#  assert_is_not "should not say hello" "$(echo goodbye cruel world)" "hello"
 assert_is_not() {
     ASSERTION="$1"
     TEST="$2"
