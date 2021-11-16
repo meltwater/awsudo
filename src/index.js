@@ -51,22 +51,15 @@ function extractPositionalOptions (positionals) {
     };
 }
 
-function quoteCommandArguments (argv) {
-    const commandIndex = argv.findIndex(arg => !arg.startsWith('-') && !isRoleArn(arg));
-
-    if (commandIndex === -1) {
-        return argv;
-    }
-
-    return argv.slice(0, commandIndex).concat(`"${argv.slice(commandIndex).join(' ')}"`);
-}
-
-const yargsv = require("yargs")(quoteCommandArguments(process.argv.slice(2)))
+const yargsv = require("yargs")(process.argv.slice(2))
     .usage(
-        "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] [arn] <command..>",
+        "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] [arn] [command..]",
         "Assume an IAM role for the duration of a command",
         yargs => {
             yargs
+                .parserConfiguration({
+                    'halt-at-non-option': true
+                })
                 .option("d", {
                     alias: "duration",
                     describe:
@@ -110,15 +103,7 @@ const yargsv = require("yargs")(quoteCommandArguments(process.argv.slice(2)))
                     default: DEFAULT_MFA_TOKEN_ARN,
                     type: "string"
                 })
-                .positional("arn", {
-                    default: DEFAULT_ROLE_ARN,
-                    describe: "ARN to assume",
-                    type: "string"
-                })
-                .positional("command", {
-                    describe: "Command to run",
-                    type: "array"
-                });
+                .help("h")
         }
     ).argv;
 
@@ -132,7 +117,7 @@ let options;
             sessionName: DEFAULT_SESSION_NAME,
             verbose: DEFAULT_VERBOSE_VALUE
     });
-    const positionalOptions = removeObjectEntries(extractPositionalOptions(yargsv.command), { roleArn: NO_ROLE_ARN });
+    const positionalOptions = removeObjectEntries(extractPositionalOptions(yargsv._), { roleArn: NO_ROLE_ARN });
     const profileOptionsValues = yargsv.profile !== NO_PROFILE ? getProfileOptionsValues(yargsv.profile) : {};
 
     try {
