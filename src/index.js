@@ -17,6 +17,7 @@ const {
 
     ERROR_INCOMPLETE_MFA_OPTIONS,
     ERROR_INVALID_ROLE_ARN,
+    ERROR_MISSING_COMMAND,
     ERROR_MISSING_ROLE_ARN_AND_PROFILE,
 
     NO_EXTERNAL_ID,
@@ -31,14 +32,15 @@ const { removeObjectEntries } = require('./remove-object-entries');
 
 const EXIT_CODE = {
     SUCCESS: 0,
-    UNKOWN: 1,
+    UNKNOWN: 1,
 
     OPTIONS_UNKNOWN: 10,
     OPTIONS_INCOMPLETE_MFA: 11,
     OPTIONS_INVALID_ROLE_ARN: 12,
+    OPTIONS_MISSING_COMMAND: 14,
     OPTIONS_MISSING_ROLE_ARN_AND_PROFILE: 13,
 
-    ASSUME_UNKOWN: 20,
+    ASSUME_UNKNOWN: 20,
 };
 
 function extractPositionalOptions (positionals) {
@@ -51,18 +53,15 @@ function extractPositionalOptions (positionals) {
     };
 }
 
-function quoteCommandArguments (argv) {
-    const commandIndex = argv.findIndex(arg => !arg.startsWith('-') && !isRoleArn(arg));
-
-    return argv.slice(0, commandIndex).concat(`"${argv.slice(commandIndex).join(' ')}"`);
-}
-
-const yargsv = require("yargs")(quoteCommandArguments(process.argv.slice(2)))
+const yargsv = require("yargs")(process.argv.slice(2))
     .usage(
-        "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] [arn] <command..>",
+        "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] [arn] [command..]",
         "Assume an IAM role for the duration of a command",
         yargs => {
             yargs
+                .parserConfiguration({
+                    'halt-at-non-option': true
+                })
                 .option("d", {
                     alias: "duration",
                     describe:
@@ -114,7 +113,8 @@ const yargsv = require("yargs")(quoteCommandArguments(process.argv.slice(2)))
                 .positional("command", {
                     describe: "Command to run",
                     type: "array"
-                });
+                })
+                .help("h")
         }
     ).argv;
 
@@ -128,7 +128,7 @@ let options;
             sessionName: DEFAULT_SESSION_NAME,
             verbose: DEFAULT_VERBOSE_VALUE
     });
-    const positionalOptions = removeObjectEntries(extractPositionalOptions(yargsv.command), { roleArn: NO_ROLE_ARN });
+    const positionalOptions = removeObjectEntries(extractPositionalOptions(yargsv._), { roleArn: NO_ROLE_ARN });
     const profileOptionsValues = yargsv.profile !== NO_PROFILE ? getProfileOptionsValues(yargsv.profile) : {};
 
     try {
@@ -143,7 +143,7 @@ let options;
         }
     }
     catch (error) {
-        let exitCode = EXIT_CODE.UNKOWN;
+        let exitCode = EXIT_CODE.UNKNOWN;
 
         switch (error.errorType) {
             case ERROR_INCOMPLETE_MFA_OPTIONS:
@@ -154,9 +154,13 @@ let options;
                 console.log(`Invalid role arn provided. Provided value: ${error.errorDetail}`);
                 exitCode = EXIT_CODE.OPTIONS_INVALID_ROLE_ARN;
                 break;
+            case ERROR_MISSING_COMMAND:
+                console.log('A command to execute must be provided.');
+                exitCode = EXIT_CODE.OPTIONS_MISSING_ROLE_ARN_AND_PROFILE;
+                break;
             case ERROR_MISSING_ROLE_ARN_AND_PROFILE:
                 console.log('Either a role arn or a profile must be specified');
-                exitCode = EXIT_CODE.OPTIONS_MISSING_ROLE_ARN_AND_PROFILE;
+                exitCode = EXIT_CODE.OPTIONS_MISSING_COMMAND;
                 break;
             default:
                 console.log('An unknown error occurred.', error.message);
@@ -211,7 +215,7 @@ let options;
         .map(arr => arr.join("="));
     } catch (err) {
         console.log("Exception while assuming role:", err);
-        process.exit(EXIT_CODE.ASSUME_UNKOWN);
+        process.exit(EXIT_CODE.ASSUME_UNKNOWN);
     }
 
     let command;
@@ -238,5 +242,5 @@ let options;
         console.log("Caught runtime exception:", maskedError);
     }
 
-    process.exit(EXIT_CODE.UNKOWN);
+    process.exit(EXIT_CODE.UNKNOWN);
 });

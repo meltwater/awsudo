@@ -17,6 +17,7 @@ const DEFAULT_VERBOSE_VALUE = false;
 
 const ERROR_INCOMPLETE_MFA_OPTIONS = 'ERROR_INCOMPLETE_MFA_OPTIONS';
 const ERROR_INVALID_ROLE_ARN = 'ERROR_INVALID_ROLE_ARN';
+const ERROR_MISSING_COMMAND = 'ERROR_MISSING_COMMAND';
 const ERROR_MISSING_ROLE_ARN_AND_PROFILE = 'ERROR_MISSING_ROLE_ARN_AND_PROFILE';
 
 class OptionsError extends Error {
@@ -54,6 +55,10 @@ class Options {
             throw new OptionsError(ERROR_MISSING_ROLE_ARN_AND_PROFILE);
         }
 
+        if (!Array.isArray(command) || command.length === 0) {
+            throw new OptionsError(ERROR_MISSING_COMMAND);
+        }
+
         this.command = command;
         this.duration = duration;
         this.externalId = externalId;
@@ -80,6 +85,7 @@ module.exports = {
 
     ERROR_INCOMPLETE_MFA_OPTIONS,
     ERROR_INVALID_ROLE_ARN,
+    ERROR_MISSING_COMMAND,
     ERROR_MISSING_ROLE_ARN_AND_PROFILE,
 
     NO_EXTERNAL_ID,
