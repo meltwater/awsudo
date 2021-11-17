@@ -133,6 +133,26 @@ assert_is_not() {
     fi
 }
 
+# Report assertion as being skipped
+#
+# Usage: [phrase to display as being skipped]
+#
+# Example:
+#  skip_assert "should not say hello"
+#
+# Aliases:
+#  - skip_assert_is
+#  - skip_assert_is_not
+#  - skip_assert_contains
+skip_assert() {
+    ASSERTION="$1"
+
+    info "Skipping: $ASSERTION"
+}
+skip_assert_is() { skip_assert "$1"; }
+skip_assert_is_not() { skip_assert "$1"; }
+skip_assert_contains() { skip_assert "$1"; }
+
 ##################################
 # MFA Token Management Functions #
 ##################################
@@ -249,5 +269,9 @@ assert_is_not "should pass commands any argument flags using a role ARN" \
 assert_contains "should not truncate npm run commands passed a -- divider" \
     "$(src/index.js $ROLE_ARN_NO_MFA npm run test:echo-for-validate-features -- all args present)" \
     "all args present"
+
+assert_contains "should not interfere with positionals when processing options with values" \
+    "$(src/index.js -d 1200 $ROLE_ARN_NO_MFA npm run test:echo-for-validate-features -- success)" \
+    "success"
 
 announce "Tests completed successfully"
