@@ -11,11 +11,13 @@ const {
     DEFAULT_MFA_TOKEN,
     DEFAULT_MFA_TOKEN_ARN,
     DEFAULT_PROFILE,
+    DEFAULT_ROLE_ARN,
     DEFAULT_SESSION_NAME,
     DEFAULT_VERBOSE_VALUE,
 
     ERROR_INCOMPLETE_MFA_OPTIONS,
     ERROR_INVALID_ROLE_ARN,
+    ERROR_MISSING_COMMAND,
     ERROR_MISSING_ROLE_ARN_AND_PROFILE,
 
     NO_EXTERNAL_ID,
@@ -35,6 +37,7 @@ const EXIT_CODE = {
     OPTIONS_UNKNOWN: 10,
     OPTIONS_INCOMPLETE_MFA: 11,
     OPTIONS_INVALID_ROLE_ARN: 12,
+    OPTIONS_MISSING_COMMAND: 14,
     OPTIONS_MISSING_ROLE_ARN_AND_PROFILE: 13,
 
     ASSUME_UNKNOWN: 20,
@@ -102,6 +105,15 @@ const yargsv = require("yargs")(process.argv.slice(2))
                     default: DEFAULT_MFA_TOKEN_ARN,
                     type: "string"
                 })
+                .positional("arn", {
+                    default: DEFAULT_ROLE_ARN,
+                    describe: "ARN to assume",
+                    type: "string"
+                })
+                .positional("command", {
+                    describe: "Command to run",
+                    type: "array"
+                })
                 .help("h")
         }
     ).argv;
@@ -142,9 +154,13 @@ let options;
                 console.log(`Invalid role arn provided. Provided value: ${error.errorDetail}`);
                 exitCode = EXIT_CODE.OPTIONS_INVALID_ROLE_ARN;
                 break;
+            case ERROR_MISSING_COMMAND:
+                console.log('A command to execute must be provided.');
+                exitCode = EXIT_CODE.OPTIONS_MISSING_ROLE_ARN_AND_PROFILE;
+                break;
             case ERROR_MISSING_ROLE_ARN_AND_PROFILE:
                 console.log('Either a role arn or a profile must be specified');
-                exitCode = EXIT_CODE.OPTIONS_MISSING_ROLE_ARN_AND_PROFILE;
+                exitCode = EXIT_CODE.OPTIONS_MISSING_COMMAND;
                 break;
             default:
                 console.log('An unknown error occurred.', error.message);
