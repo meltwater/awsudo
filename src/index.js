@@ -11,6 +11,7 @@ const {
     DEFAULT_EXTERNAL_ID,
     DEFAULT_MFA_TOKEN,
     DEFAULT_MFA_TOKEN_ARN,
+    DEFAULT_PRESERVE_CREDENTIALS_CACHE,
     DEFAULT_PROFILE,
     DEFAULT_ROLE_ARN,
     DEFAULT_SESSION_NAME,
@@ -105,6 +106,11 @@ const yargsv = require("yargs")(process.argv.slice(2))
                     describe: "ARN for users MFA [Must also supply mfa-token]",
                     default: DEFAULT_MFA_TOKEN_ARN,
                     type: "string"
+                })
+                .options('preserve-credentials-cache', {
+                    describe: "Remove the AWS credentials cache folder when command is complete",
+                    default: DEFAULT_PRESERVE_CREDENTIALS_CACHE,
+                    type: "boolean"
                 })
                 .positional("arn", {
                     default: DEFAULT_ROLE_ARN,
@@ -238,7 +244,9 @@ let options;
 
     execSync(command, { stdio: "inherit" });
 
-    cleanAwsCredentialsCache();
+    if (!options.preserveCredentialsCache) {
+        cleanAwsCredentialsCache();
+    }
 })().catch(err => {
     if (yargsv.verbose) {
         const maskedError = err.toString().replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
