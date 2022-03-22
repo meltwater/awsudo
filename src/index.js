@@ -2,6 +2,7 @@
 
 const AWS = require("aws-sdk");
 const { execSync } = require("child_process");
+const { cleanAwsCredentialsCache } = require('./clean-aws-credentials-cache');
 const { getProfileList } = require('./get-profile-list');
 const { getProfileOptionsValues } = require('./get-profile-options-values');
 const { isRoleArn } = require('./is-role-arn');
@@ -114,7 +115,7 @@ const yargsv = require("yargs")(process.argv.slice(2))
                     describe: "Command to run",
                     type: "array"
                 })
-                .help("h")
+                .help("h");
         }
     ).argv;
 
@@ -236,6 +237,8 @@ let options;
     }
 
     execSync(command, { stdio: "inherit" });
+
+    cleanAwsCredentialsCache();
 })().catch(err => {
     if (yargsv.verbose) {
         const maskedError = err.toString().replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
