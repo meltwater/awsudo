@@ -8,7 +8,7 @@
   "scripts": {
     "deploy-docker": "scripts/deploy-docker",
     "postversion": "scripts/postversion",
-    "pretest": "npm outdated && echo '\\033[33;7mRE-ENABLE NPM AUDIT WHEN POSSIBLE: npm audit\\033[33;0m' && eslint src/**/*.js",
+    "pretest": "npm outdated && npm audit && eslint src/**/*.js",
     "preversion": "scripts/preversion",
     "start": "src/index.js",
     "test": "JASMINE_CONFIG_PATH=jasmine.json jasmine",
@@ -45,7 +45,7 @@
   },
   "homepage": "https://github.com/meltwater/awsudo#readme",
   "dependencies": {
-    "aws-sdk": "2.1097.0",
+    "aws-sdk": "2.1101.0",
     "yargs": "17.4.0"
   },
   "devDependencies": {
