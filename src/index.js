@@ -108,7 +108,7 @@ const yargsv = require("yargs")(process.argv.slice(2))
                     type: "string"
                 })
                 .options('preserve-credentials-cache', {
-                    describe: "Remove the AWS credentials cache folder when command is complete",
+                    describe: "Retain the AWS credentials cache folder when command is complete; otherwise remove it",
                     default: DEFAULT_PRESERVE_CREDENTIALS_CACHE,
                     type: "boolean"
                 })
