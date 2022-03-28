@@ -6,6 +6,7 @@ const { cleanAwsCredentialsCache } = require('./clean-aws-credentials-cache');
 const { getProfileList } = require('./get-profile-list');
 const { getProfileOptionsValues } = require('./get-profile-options-values');
 const { isRoleArn } = require('./is-role-arn');
+const { isWindows } = require('./is-windows');
 const {
     DEFAULT_DURATION,
     DEFAULT_EXTERNAL_ID,
@@ -127,6 +128,7 @@ const yargsv = require("yargs")(process.argv.slice(2))
 
 let options;
 (async () => {
+    const isWin32 = isWindows();
     const specifiedOptions = removeObjectEntries(yargsv, {
             duration: DEFAULT_DURATION,
             externalId: DEFAULT_EXTERNAL_ID,
@@ -226,7 +228,7 @@ let options;
     }
 
     let command;
-    if (process.platform === "win32") {
+    if (isWin32) {
         command = awsEnvironmentSetCommands
             .map((arr) => `SET "${arr}"`)
             .concat(options.command.join(" "))
@@ -245,7 +247,7 @@ let options;
     execSync(command, { stdio: "inherit" });
 
     if (!options.preserveCredentialsCache) {
-        cleanAwsCredentialsCache();
+        cleanAwsCredentialsCache({ isWindows: isWin32 });
     }
 })().catch(err => {
     if (yargsv.verbose) {

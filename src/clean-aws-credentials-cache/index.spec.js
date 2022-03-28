@@ -22,7 +22,7 @@ describe('cleanAwsCredentialsCache', () => {
         });
 
         it('should remove aws credentials cache folder', () => {
-            cleanAwsCredentialsCache();
+            cleanAwsCredentialsCache({ isWindows: true });
 
             expect(fs.rmdirSync).toHaveBeenCalledWith('%UserProfile%\\.aws\\cli\\cache', jasmine.anything());
         });
@@ -35,7 +35,7 @@ describe('cleanAwsCredentialsCache', () => {
                 return false;
             });
 
-            cleanAwsCredentialsCache();
+            cleanAwsCredentialsCache({ isWindows: true });
 
             expect(fs.rmdirSync).toHaveBeenCalledWith(jasmine.anything(), { recursive: true });
         });
@@ -52,13 +52,13 @@ describe('cleanAwsCredentialsCache', () => {
         });
 
         it('should remove aws credentials cache folder', () => {
-            cleanAwsCredentialsCache();
+            cleanAwsCredentialsCache({ isWindows: false });
 
             expect(fs.rmdirSync).toHaveBeenCalledWith('~/.aws/cli/cache', jasmine.anything());
         });
 
         it('should pass option to allow folder to be emptied if it has contents', () => {
-            cleanAwsCredentialsCache();
+            cleanAwsCredentialsCache({ isWindows: false });
 
             expect(fs.rmdirSync).toHaveBeenCalledWith(jasmine.anything(), { recursive: true });
         });

@@ -49,7 +49,7 @@
     "yargs": "17.4.0"
   },
   "devDependencies": {
-    "eslint": "8.11.0",
+    "eslint": "8.12.0",
     "jasmine": "4.0.2",
     "mustache": "4.2.0",
     "nodemon": "2.0.15"
