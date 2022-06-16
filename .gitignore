@@ -3,4 +3,3 @@ node_modules/
 
 .screen_layout
 npm-debug.log*
-Dockerfile

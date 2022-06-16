@@ -10,17 +10,24 @@ done
 printf "\n%s available!\n\n" "$VERSION"
 
 echo "Deploying: awsudo/awsudo"
-mustache package.json Docker.template > Dockerfile
-
 docker login
 
 echo "Building..."
-docker build . -t awsudo/awsudo:latest -t awsudo/awsudo:v"${VERSION}"
 
-printf "Push awsudo/awsudo:v%s\n" "${VERSION}"
-docker push awsudo/awsudo:v"${VERSION}"
+docker build --build-arg version="$VERSION" . -f Dockerfile.erbium -t awsudo/awsudo:latest -t awsudo/awsudo:v"${VERSION}" -t awsudo/awsudo:v"${VERSION}"-erbium
 
-echo "Push awsudo/awsudo:latest"
+echo "Pushing awsudo/awsudo:latest"
 docker push awsudo/awsudo:latest
+printf "Pushing awsudo/awsudo:v%s\n" "${VERSION}"
+docker push awsudo/awsudo:v"${VERSION}"
+printf "Pushing awsudo/awsudo:v%s-erbium\n" "${VERSION}"
+docker push awsudo/awsudo:v"${VERSION}-erbium"
+
+for NODE_LTS in "fermium" "gallium"; do
+    docker build --build-arg version="$VERSION" . -t awsudo/awsudo:v"${VERSION}"-"$NODE_LTS"
+
+    printf "Pushing awsudo/awsudo:v%s-%s\n" "${VERSION}" ${NODE_LTS}
+    docker push awsudo/awsudo:v"${VERSION}-${NODE_LTS}"
+done
 
 echo "All done!"
