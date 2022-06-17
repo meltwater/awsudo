@@ -12,19 +12,25 @@ printf "\n%s available!\n\n" "$VERSION"
 echo "Deploying: awsudo/awsudo"
 docker login
 
-echo "Building..."
+echo "Publishing default tags (latest & v${VERSION})..."
 
-docker build --build-arg version="$VERSION" . -f Dockerfile.erbium -t awsudo/awsudo:latest -t awsudo/awsudo:v"${VERSION}" -t awsudo/awsudo:v"${VERSION}"-erbium
+docker build --build-arg version="$VERSION" . -f Dockerfile.legacy \
+    -t awsudo/awsudo:latest \
+    -t awsudo/awsudo:v"${VERSION}"
 
 echo "Pushing awsudo/awsudo:latest"
 docker push awsudo/awsudo:latest
 printf "Pushing awsudo/awsudo:v%s\n" "${VERSION}"
 docker push awsudo/awsudo:v"${VERSION}"
-printf "Pushing awsudo/awsudo:v%s-erbium\n" "${VERSION}"
-docker push awsudo/awsudo:v"${VERSION}-erbium"
 
-for NODE_LTS in "fermium" "gallium"; do
-    docker build --build-arg version="$VERSION" . -t awsudo/awsudo:v"${VERSION}"-"$NODE_LTS"
+echo "Publishing tags alternative node LTS releases..."
+for NODE_LTS in "erbium" "fermium" "gallium"; do
+    docker build --build-arg version="$VERSION" . \
+        -t awsudo/awsudo:"$NODE_LTS" \
+        -t awsudo/awsudo:v"${VERSION}"-"$NODE_LTS"
+
+    printf "Pushing awsudo/awsudo:%s\n" ${NODE_LTS}
+    docker push awsudo/awsudo:v"${NODE_LTS}"
 
     printf "Pushing awsudo/awsudo:v%s-%s\n" "${VERSION}" ${NODE_LTS}
     docker push awsudo/awsudo:v"${VERSION}-${NODE_LTS}"
