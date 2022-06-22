@@ -41,8 +41,7 @@ Docker images are often the basis of other images which rely on OS features (e.g
 * Docker images with current dependencies will be available 
 * Sliding versions may break dependents that directly rely on the unspecific dependency
 
-
-[#67]: /meltwater/awsudo/issues/67
+[#67]: https://github.com/meltwater/awsudo/issues/67
 [node image]: https://hub.docker.com/_/node
 [nodejs releases]: https://nodejs.org/en/about/releases/
-[Generate Docker images based on node]: /meltwater/awsudo/pull/66
+[Generate Docker images based on node]: https://github.com/meltwater/awsudo/pull/66
