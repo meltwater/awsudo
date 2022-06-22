@@ -206,8 +206,8 @@ if ! grep mfa_serial ~/.aws/credentials ~/.aws/config > /dev/null; then error "A
 #       Start Test Suite        #
 #################################
 announce "Testing unauthenticated features"
-assert_is "should display help text" \
-    "$(src/index.js -h 2>&1 | grep -o 'Show help')" \
+assert_contains "should display help text" \
+    "$(src/index.js -h 2>&1)" \
     "Show help"
 
 announce "Testing access without MFA authentication"
