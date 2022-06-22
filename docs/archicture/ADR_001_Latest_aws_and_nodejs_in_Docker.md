@@ -34,7 +34,7 @@ Docker images are often the basis of other images which rely on OS features (e.g
 
 ## Status
 
-[Trial application][Generate Docker images based on node] while seeking feedback
+[Trial application][Generate Docker images based on node] while [seeking feedback][#67]
 
 ## Consequences
 
