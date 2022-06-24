@@ -1,0 +1,5 @@
+#!/bin/bash
+cat /etc/motd
+
+/usr/bin/awsudo $*
+
