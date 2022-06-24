@@ -31,7 +31,7 @@ for NODE_LTS in "erbium" "fermium" "gallium"; do
         -t awsudo/awsudo:v"${VERSION}"-"$NODE_LTS"
 
     printf "Pushing awsudo/awsudo:%s\n" ${NODE_LTS}
-    docker push awsudo/awsudo:v"${NODE_LTS}"
+    docker push awsudo/awsudo:"${NODE_LTS}"
 
     printf "Pushing awsudo/awsudo:v%s-%s\n" "${VERSION}" ${NODE_LTS}
     docker push awsudo/awsudo:v"${VERSION}-${NODE_LTS}"
