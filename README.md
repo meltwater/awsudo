@@ -143,7 +143,7 @@ directory for the container as well:
 
 ```bash
 docker run -v ~/.aws:/root/.aws awsudo/awsudo \
-    -v $PWD:/work -w /work \
+    --volume $PWD:/docker-working-directory --workdir /docker-working-directory \
     awsudo/awsudo \
     awsudo arn:aws:iam::123456789012:role/S3Access aws s3 cp ./some/directory s3://some-bucket
 ```
