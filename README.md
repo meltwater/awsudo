@@ -186,9 +186,9 @@ for a given image tag:
 > When this policy was enacted, Node.js Erbium was already EOL. However it was
 > the basis of our only tags at the time: `:latest` and `vX.Y.Z`.
 >
-> To allow consumers to have a change to migrate, that version is grandfathered
-> until the EOL of Node.js Fermium in October 2022 **and will continue to be the
-> basis of the `:latest` and `vX.Y.Z` tags.
+> To allow consumers to have a chance to migrate, that version is grandfathered
+> until the start of LTS for Node.js v18 in October 2022 **and will continue to
+> be the basis of the `:latest` and `vX.Y.Z` tags.**
 >
 > After that change, `vX.Y.Z` tags will reflect the latest Node.js LTS and
 > `:latest` will reflect both the latest awsudo and Node.js LTS.
