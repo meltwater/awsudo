@@ -174,12 +174,12 @@ published with a selection of tags.
 The table below illustrates what version of each tool can be expected
 for a given image tag:
 
-|        | `:latest` |`:vX.Y.Z` | `:nodeLTS` | `:vX.Y.Z-nodeLTS` |
-| ------ | --------- | -------- | ---------- | ----------------- |
-| awsudo | latest    | latest   | latest     | vX.Y.Z            |
-| aws    | 1.18.106  | 1.18.106 | latest v2  | latest v2         |
-| Node.js   | erbium    | nodeLTS  | nodeLTS    | nodeLTS           |
-| OS     | [alpine][alpine-docker]    | [alpine][alpine-docker]   | [debian][debian-docker]     | [debian][debian-docker]     |
+|         | `:latest` |`:vX.Y.Z` | `:nodeLTS` | `:vX.Y.Z-nodeLTS` |
+| ------- | --------- | -------- | ---------- | ----------------- |
+| awsudo  | latest    | vX.Y.Z   | latest     | vX.Y.Z            |
+| aws     | 1.18.106  | 1.18.106 | latest v2  | latest v2         |
+| Node.js | erbium    | erbium   | nodeLTS    | nodeLTS           |
+| OS      | [alpine][alpine-docker] | [alpine][alpine-docker] | [debian][debian-docker] | [debian][debian-docker] |
 
 > **Legacy erbium / aws v1 warning:**
 >
