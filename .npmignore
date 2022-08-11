@@ -1,0 +1,10 @@
+docker/
+jasmine.json
+PULL_REQUEST_TEMPLATE.md
+.drone.yml
+.gitpod.yml
+
+scripts/
+.editorconfig
+.eslintrc
+.nvmrc
