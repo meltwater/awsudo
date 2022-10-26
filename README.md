@@ -47,7 +47,7 @@ day-to-day operations, local troubleshooting, etc:
 npm install -g awsudo
 ```
 
-#### Node
+#### Node.js
 
 awsudo can also be installed for use by specific Node.js projects (i.e. as part
 of a CI/CD build process) by adding it as a dependency like any other:
@@ -59,38 +59,10 @@ npm install --save-dev awsudo
 npm will place it in the execution PATH for any scripts defined in
 it package.json that it runs (e.g. start, test).
 
-#### Docker
-
-awsudo can also be used from its official Docker image, which packages it along
-with its dependencies and the AWS cli.
-
-```bash
-docker pull awsudo/awsudo
-```
-
-The Docker image can be used as a direct command (remember to mount your AWS
-configuration as a volume in the container):
-
-```bash
-docker run -v ~/.aws:/root/.aws awsudo/awsudo awsudo arn:aws:iam::[AWS_ACCOUNT_ID]:role/[role name] [aws command]
-```
-
-or it can be launched as an environment for running multiple commands
-interactively:
-
-```bash
-docker run -it -v ~/.aws:/root/.aws awsudo/awsudo awsudo /bin/bash
-```
-
 #### deb and rpm packages
 
 In addition to the native npm package and Docker image, there are .deb and .rpm
 packages avaialble.
-
-> **Warning:** You must install Node.js separately, because these packages are not
-> marked as dependent on Node.js within the Debian or Red Hat ecosystems. This
-> facilitates portability across distributions and better accomodates the
-> multitude of ways Node.js can be installed (e.g. using nvm).
 
 These can be downloaded from
 
@@ -109,21 +81,117 @@ These can be downloaded from
    curl -LO $(curl -s https://api.github.com/repos/meltwater/awsudo/releases/latest | grep -Eo 'https://github\.com/meltwater/awsudo/releases/download/v.*\.rpm')
    ```
 
-### Example usages
+> **Warning:** You must install Node.js separately, because these packages are not
+> marked as dependent on Node.js within the Debian or Red Hat ecosystems. This
+> facilitates portability across distributions and better accomodates the
+> multitude of ways Node.js can be installed (e.g. using nvm).
 
-#### Command
+#### Docker
 
-Basic usage when awsudo is on the PATH:
+awsudo can also be used from its official Docker image, which packages it along
+with its dependencies and the AWS cli.
+
+```bash
+docker pull awsudo/awsudo
+```
+
+> **Note:** See Docker under Usage for details of what the image includes.
+
+## Usage
+
+Basic usage when awsudo is on the PATH resembles this example:
 
 ```bash
 awsudo arn:aws:iam::123456789012:role/S3Access aws s3 cp ./some/directory s3://some-bucket
 ```
 
-when using with Docker as a command (i.e. not within the container):
+**💡 Tip: awsudo shell!**
+
+When running multiple commands as the same role (especially when using MFA),
+it can be convenient to temporarily authenticate all commands as that role by
+launching a new shell using awsudo:
 
 ```bash
-docker run -v ~/.aws:/root/.aws awsudo/awsudo awsudo arn:aws:iam::123456789012:role/S3Access aws s3 cp ./some/directory s3://some-bucket
+awsudo arn:aws:iam::123456789012:role/S3Access /bin/bash
+aws s3 cp ./some/directory s3://some-bucket
+aws s3 cp ./another/directory s3://some-bucket
+aws s3api list-objects --bucket some-bucket
 ```
+
+> **Note:** the lifespan of the authentication within the shell is dictated by
+> the `--duration` argument to awsudo
+
+### Docker
+
+The Docker image can be used as a direct command:
+
+```bash
+docker run awsudo/awsudo awsudo --help
+```
+
+In order to assume roles, the AWS configuration needs to be mounted as a
+volume in the container:
+
+```bash
+docker run -v ~/.aws:/root/.aws \
+    awsudo/awsudo \
+    awsudo arn:aws:iam::123456789012:role/S3Access aws s3 ls
+```
+
+If you need to operate on local files, those need to be mounted to a working
+directory for the container as well:
+
+```bash
+docker run -v ~/.aws:/root/.aws awsudo/awsudo \
+    --volume $PWD:/docker-working-directory --workdir /docker-working-directory \
+    awsudo/awsudo \
+    awsudo arn:aws:iam::123456789012:role/S3Access aws s3 cp ./some/directory s3://some-bucket
+```
+
+#### Docker image contents
+
+The main focus of the Docker image is to provide awsudo, however it includes
+some other tools that may be of use:
+
+* `aws` - a key component for many uses of awsudo
+* `node` - the runtime engine of awsudo itself
+* an OS with a package manager to facilitate installing additional software
+
+Each of these have their own releases which may affect a consumer of the awsudo
+image. To provide a predictable environment for consumers we guarantee that,
+starting with [v1.7.2]:
+
+* an image for each version of awsudo is available
+* an image for each active or maintenance [Node.js LTS] version is available
+* an image for each combination of awsudo and Node.js LTS is available
+* the latest release of the v2 AWS CLI will be included
+    * See the legacy warning below for an exception
+* the choice of base OS is tied to a Node.js LTS version
+
+To allow selection across all of these possibilities, the awsudo image is
+published with a selection of tags.
+
+The table below illustrates what version of each tool can be expected
+for a given image tag:
+
+|         | `:latest` |`:vX.Y.Z` | `:nodeLTS` | `:vX.Y.Z-nodeLTS` |
+| ------- | --------- | -------- | ---------- | ----------------- |
+| awsudo  | latest    | vX.Y.Z   | latest     | vX.Y.Z            |
+| aws     | 1.18.106  | 1.18.106 | latest v2  | latest v2         |
+| Node.js | erbium    | erbium   | nodeLTS    | nodeLTS           |
+| OS      | [alpine][alpine-docker] | [alpine][alpine-docker] | [debian][debian-docker] | [debian][debian-docker] |
+
+> **Legacy erbium / aws v1 warning:**
+>
+> When this policy was enacted, Node.js Erbium was already EOL. However it was
+> the basis of our only tags at the time: `:latest` and `vX.Y.Z`.
+>
+> To allow consumers to have a chance to migrate, that version is grandfathered
+> until the start of LTS for Node.js v18 in October 2022 **and will continue to
+> be the basis of the `:latest` and `vX.Y.Z` tags.**
+>
+> After that change, `vX.Y.Z` tags will reflect the latest Node.js LTS and
+> `:latest` will reflect both the latest awsudo and Node.js LTS.
 
 #### Docker-based CI/CD
 
@@ -135,7 +203,7 @@ deploy into AWS:
 
 ```yaml
 deploy:
-  image: awsudo/awsudo:latest
+  image: awsudo/awsudo:gallium
   commands:
     # Copy build artifacts to publicly-readable S3 bucket
     - awsudo arn:aws:iam::${AWS_ACCOUNT_ID}:role/S3Access aws s3 cp ./build s3://some-bucket --acl public-read --recursive
@@ -194,3 +262,9 @@ Thank you to everyone who has been one of our [contributors](CONTRIBUTORS.md)!
 ## Questions/Contact?
 
 The maintainer of this repository is the [AWS sudo open source maintainers at Meltwater](mailto:awsudo.opensource@meltwater.com), please send us any questions.
+
+[v1.7.2]: https://github.com/meltwater/awsudo/releases/tag/v1.7.2
+[alpine-docker]: https://hub.docker.com/_/alpine
+[debian-docker]: https://hub.docker.com/_/debian
+[Docker tag ADR]: https://github.com/meltwater/awsudo/blob/master/docs/architecture/ADR_001_Latest_aws_and_nodejs_in_Docker.md
+[Node.js LTS]: https://nodejs.org/en/about/releases/
