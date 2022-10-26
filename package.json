@@ -1,6 +1,6 @@
 {
   "name": "awsudo",
-  "version": "1.7.2",
+  "version": "1.7.4",
   "description": "A simple utility for executing cli commands with an assumed role.",
   "bin": {
     "awsudo": "src/index.js"
@@ -8,7 +8,7 @@
   "scripts": {
     "deploy-docker": "scripts/deploy-docker",
     "postversion": "scripts/postversion",
-    "pretest": "npm outdated && npm audit --production && echo '!!!!! Remove production flag from audit !!!!!' && eslint src/**/*.js",
+    "pretest": "npm outdated && npm audit && eslint src/**/*.js",
     "preversion": "scripts/preversion",
     "start": "src/index.js",
     "test": "JASMINE_CONFIG_PATH=jasmine.json jasmine",
@@ -45,12 +45,12 @@
   },
   "homepage": "https://github.com/meltwater/awsudo#readme",
   "dependencies": {
-    "aws-sdk": "2.1162.0",
-    "yargs": "17.5.1"
+    "aws-sdk": "2.1240.0",
+    "yargs": "17.6.0"
   },
   "devDependencies": {
-    "eslint": "8.18.0",
-    "jasmine": "4.2.1",
-    "nodemon": "2.0.18"
+    "eslint": "8.26.0",
+    "jasmine": "4.4.0",
+    "nodemon": "2.0.20"
   }
 }
