@@ -10,6 +10,7 @@ const DEFAULT_DURATION = 900;
 const DEFAULT_EXTERNAL_ID = NO_EXTERNAL_ID;
 const DEFAULT_MFA_TOKEN = NO_MFA_TOKEN;
 const DEFAULT_MFA_TOKEN_ARN = NO_MFA_TOKEN_ARN;
+const DEFAULT_PRESERVE_CREDENTIALS_CACHE = false;
 const DEFAULT_PROFILE = NO_PROFILE;
 const DEFAULT_ROLE_ARN = NO_ROLE_ARN;
 const DEFAULT_SESSION_NAME = 'RoleSession';
@@ -36,10 +37,11 @@ class Options {
         externalId = DEFAULT_EXTERNAL_ID,
         mfaToken = DEFAULT_MFA_TOKEN,
         mfaTokenArn = DEFAULT_MFA_TOKEN_ARN,
+        preserveCredentialsCache = DEFAULT_PRESERVE_CREDENTIALS_CACHE,
         profile = DEFAULT_PROFILE,
         roleArn = DEFAULT_ROLE_ARN,
         sessionName = DEFAULT_SESSION_NAME,
-        verbose = DEFAULT_VERBOSE_VALUE
+        verbose = DEFAULT_VERBOSE_VALUE,
     }) {
         if ((mfaToken === NO_MFA_TOKEN && mfaTokenArn !== NO_MFA_TOKEN_ARN) ||
             (mfaToken !== NO_MFA_TOKEN && mfaTokenArn === NO_MFA_TOKEN_ARN)) {
@@ -64,6 +66,7 @@ class Options {
         this.externalId = externalId;
         this.mfaToken = mfaToken;
         this.mfaTokenArn = mfaTokenArn;
+        this.preserveCredentialsCache = preserveCredentialsCache;
         this.profile = profile;
         this.roleArn = roleArn;
         this.sessionName = sessionName;
@@ -78,6 +81,7 @@ module.exports = {
     DEFAULT_EXTERNAL_ID,
     DEFAULT_MFA_TOKEN,
     DEFAULT_MFA_TOKEN_ARN,
+    DEFAULT_PRESERVE_CREDENTIALS_CACHE,
     DEFAULT_PROFILE,
     DEFAULT_ROLE_ARN,
     DEFAULT_SESSION_NAME,
