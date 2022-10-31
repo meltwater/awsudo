@@ -165,7 +165,6 @@ starting with [v1.7.2]:
 * an image for each active or maintenance [Node.js LTS] version is available
 * an image for each combination of awsudo and Node.js LTS is available
 * the latest release of the v2 AWS CLI will be included
-    * See the legacy warning below for an exception
 * the choice of base OS is tied to a Node.js LTS version
 
 To allow selection across all of these possibilities, the awsudo image is
@@ -174,24 +173,12 @@ published with a selection of tags.
 The table below illustrates what version of each tool can be expected
 for a given image tag:
 
-|         | `:latest` |`:vX.Y.Z` | `:nodeLTS` | `:vX.Y.Z-nodeLTS` |
-| ------- | --------- | -------- | ---------- | ----------------- |
-| awsudo  | latest    | vX.Y.Z   | latest     | vX.Y.Z            |
-| aws     | 1.18.106  | 1.18.106 | latest v2  | latest v2         |
-| Node.js | erbium    | erbium   | nodeLTS    | nodeLTS           |
-| OS      | [alpine][alpine-docker] | [alpine][alpine-docker] | [debian][debian-docker] | [debian][debian-docker] |
-
-> **Legacy erbium / aws v1 warning:**
->
-> When this policy was enacted, Node.js Erbium was already EOL. However it was
-> the basis of our only tags at the time: `:latest` and `vX.Y.Z`.
->
-> To allow consumers to have a chance to migrate, that version is grandfathered
-> until the start of LTS for Node.js v18 in October 2022 **and will continue to
-> be the basis of the `:latest` and `vX.Y.Z` tags.**
->
-> After that change, `vX.Y.Z` tags will reflect the latest Node.js LTS and
-> `:latest` will reflect both the latest awsudo and Node.js LTS.
+|         | `:latest` |`:vX.Y.Z`  | `:nodeLTS` | `:vX.Y.Z-nodeLTS` |
+| ------- | --------- | --------  | ---------- | ----------------- |
+| awsudo  | latest    | vX.Y.Z    | latest     | vX.Y.Z            |
+| aws     | latest v2 | latest v2 | latest v2  | latest v2         |
+| Node.js | latest    | latest    | nodeLTS    | nodeLTS           |
+| OS      | [debian][debian-docker] | [debian][debian-docker] | [debian][debian-docker] | [debian][debian-docker] |
 
 #### Docker-based CI/CD
 
@@ -264,7 +251,6 @@ Thank you to everyone who has been one of our [contributors](CONTRIBUTORS.md)!
 The maintainer of this repository is the [AWS sudo open source maintainers at Meltwater](mailto:awsudo.opensource@meltwater.com), please send us any questions.
 
 [v1.7.2]: https://github.com/meltwater/awsudo/releases/tag/v1.7.2
-[alpine-docker]: https://hub.docker.com/_/alpine
 [debian-docker]: https://hub.docker.com/_/debian
 [Docker tag ADR]: https://github.com/meltwater/awsudo/blob/master/docs/architecture/ADR_001_Latest_aws_and_nodejs_in_Docker.md
 [Node.js LTS]: https://nodejs.org/en/about/releases/

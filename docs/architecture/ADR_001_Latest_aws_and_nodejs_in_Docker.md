@@ -22,7 +22,7 @@ Docker images are often the basis of other images which rely on OS features (e.g
 * Docker images are tagged to specify
     * awsudo version
     * nodejs version (by LTS codename)
-    * Ex: `:v1.7.2-gallium` 
+    * Ex: `:v1.7.2-gallium`
 * Unspecified tag values "slide" to the latest version
      * Ex: these tags would be equivalent:
          * `:v1.7.2`
@@ -34,11 +34,11 @@ Docker images are often the basis of other images which rely on OS features (e.g
 
 ## Status
 
-[Trial application][Generate Docker images based on node] while [seeking feedback][#67]
+Accepted
 
 ## Consequences
 
-* Docker images with current dependencies will be available 
+* Docker images with current dependencies will be available
 * Sliding versions may break dependents that directly rely on the unspecific dependency
 
 [#67]: https://github.com/meltwater/awsudo/issues/67
