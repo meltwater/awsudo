@@ -36,6 +36,9 @@ Options:
                                                        [string] [default: false]
   -m, --mfa-token-arn  ARN for users MFA [Must also supply mfa-token]
                                                        [string] [default: false]
+      --preserve-credentials-cache  Retain the AWS credentials cache folder when
+                                    command is complete; otherwise remove it
+                                                      [boolean] [default: false]
 ```
 
 ### Install
