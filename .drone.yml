@@ -3,15 +3,15 @@ name: awsudo build
 
 steps:
   - name: install
-    image: node:erbium
+    image: node:fermium
     commands:
       - npm ci
   - name: test
-    image: node:erbium
+    image: node:fermium
     commands:
       - npm test
   - name: deploy-npm
-    image: node:erbium
+    image: node:fermium
     commands:
       - echo "//registry.npmjs.org/:_authToken=$${NPM_DEPLOY_TOKEN}" > ~/.npmrc
       - echo "unsafe-perm=true" >> ~/.npmrc
@@ -24,7 +24,7 @@ steps:
       branch:
         - include: [ v* ]
   - name: build-packages
-    image: node:erbium
+    image: node:fermium
     commands:
       - apt-get update
       - apt-get install -y ruby-dev build-essential rpm
