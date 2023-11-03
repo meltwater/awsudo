@@ -45,13 +45,13 @@
   },
   "homepage": "https://github.com/meltwater/awsudo#readme",
   "dependencies": {
-    "aws-sdk": "2.1244.0",
-    "yargs": "17.6.0"
+    "aws-sdk": "2.1488.0",
+    "yargs": "17.7.2"
   },
   "devDependencies": {
-    "eslint": "8.26.0",
-    "jasmine": "4.5.0",
+    "eslint": "8.52.0",
+    "jasmine": "5.1.0",
     "mustache": "4.2.0",
-    "nodemon": "2.0.20"
+    "nodemon": "3.0.1"
   }
 }
