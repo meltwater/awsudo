@@ -12,10 +12,10 @@ printf "\n%s available!\n\n" "$VERSION"
 echo "Deploying: awsudo/awsudo"
 docker login
 
-LATEST_NODE_LTS=hydrogen
+LATEST_NODE_LTS=iron
 
 echo "Publishing tags specific to node LTS releases..."
-for NODE_LTS in "fermium" "gallium" "hydrogen"; do
+for NODE_LTS in "fermium" "gallium" "hydrogen" "iron"; do
     docker build --build-arg node_lts="$NODE_LTS" --build-arg version="$VERSION" . \
         -t awsudo/awsudo:"$NODE_LTS" \
         -t awsudo/awsudo:v"${VERSION}"-"$NODE_LTS"
