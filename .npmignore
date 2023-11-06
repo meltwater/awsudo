@@ -1,6 +1,7 @@
 docker/
 scripts/
 
+.github
 .drone.yml
 .editorconfig
 .eslintrc
