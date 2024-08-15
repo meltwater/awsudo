@@ -15,7 +15,7 @@ Due to its relatively short (30 month) LTS cycle, it's useful to support multipl
 
 AWS CLI v2 has been the latest version for over 2 years and maintains backward compatibility within its major version.
 
-Docker images are often the basis of other images which rely on OS features (e.g. package management tools)
+Docker images are often the basis of other images which rely on OS features (e.g. package management tools).
 
 ## Decision
 
@@ -38,8 +38,8 @@ Accepted
 
 ## Consequences
 
-* Docker images with current dependencies will be available
-* Sliding versions may break dependents that directly rely on the unspecific dependency
+* Docker images with current dependencies will be available.
+* Sliding versions may break dependents that directly rely on the unspecific dependency.
 
 [#67]: https://github.com/meltwater/awsudo/issues/67
 [node image]: https://hub.docker.com/_/node
