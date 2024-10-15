@@ -31,6 +31,7 @@ class OptionsError extends Error {
 }
 
 class Options {
+    // eslint-disable-next-line complexity
     constructor ({
         command,
         duration = DEFAULT_DURATION,
@@ -41,7 +42,7 @@ class Options {
         profile = DEFAULT_PROFILE,
         roleArn = DEFAULT_ROLE_ARN,
         sessionName = DEFAULT_SESSION_NAME,
-        verbose = DEFAULT_VERBOSE_VALUE,
+        verbose = DEFAULT_VERBOSE_VALUE
     }) {
         if ((mfaToken === NO_MFA_TOKEN && mfaTokenArn !== NO_MFA_TOKEN_ARN) ||
             (mfaToken !== NO_MFA_TOKEN && mfaTokenArn === NO_MFA_TOKEN_ARN)) {
