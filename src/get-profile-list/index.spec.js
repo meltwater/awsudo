@@ -1,34 +1,37 @@
-const AWS = require('aws-sdk');
-const { getProfileList } = require('./index');
+const LoadProfilesFromConfigModule = require('../load-profiles-from-config');
 
 describe('Getting profile list', () => {
-    beforeEach(() => {
-        spyOn(AWS.util, 'getProfilesFromSharedConfig').and.returnValue({});
+    let getProfileList;
+    let loadProfilesFromConfigSpy;
+    
+    beforeAll(() => {
+        loadProfilesFromConfigSpy = spyOn(LoadProfilesFromConfigModule, 'loadProfilesFromConfig');
+        getProfileList = require('./index').getProfileList;
     });
 
-    it('should get profiles from shared config with the default iniLoader', () => {
-        getProfileList();
+    it('should get profiles from shared config with the default iniLoader', async () => {
+        await getProfileList();
 
-        expect(AWS.util.getProfilesFromSharedConfig).toHaveBeenCalledWith(AWS.util.iniLoader);
+        expect(loadProfilesFromConfigSpy).toHaveBeenCalled();
     });
 
-    it('should return profile object\'s keys', () => {
+    it('should return profile object\'s keys', async () => {
         const profiles = {
             ProfileOne: {},
             ProfileTwo: {}
         };
 
-        AWS.util.getProfilesFromSharedConfig.and.returnValue(profiles);
+        loadProfilesFromConfigSpy.and.returnValue(Promise.resolve(profiles));
 
-        const result = getProfileList();
+        const result = await getProfileList();
 
         expect(result).toEqual(Object.keys(profiles));
     });
 
-    it('should return an empty list if no profiles are available', () => {
-        AWS.util.getProfilesFromSharedConfig.and.throwError();
+    it('should return an empty list if no profiles are available', async () => {
+        LoadProfilesFromConfigModule.loadProfilesFromConfig.and.throwError();
 
-        const result = getProfileList();
+        const result = await getProfileList();
 
         expect(result).toEqual([]);
     });

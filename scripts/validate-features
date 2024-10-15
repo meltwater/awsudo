@@ -198,7 +198,7 @@ is_invalid_profile() {
 announce "Checking for prerequisites"
 
 if ! command -v docker > /dev/null; then error "The docker command is required"; exit 1; fi
-if [ ! -f ~/.aws/credentials ]; then error "A ~/.aws/credentials file is required"; exit 1; fi
+if [ ! -f ~/.aws/credentials ] && [ ! -f ~/.aws/config ]; then error "A ~/.aws/credentials file or ~/.aws/config file is required"; exit 1; fi
 if ! grep profile ~/.aws/credentials ~/.aws/config > /dev/null; then error "At least one AWS profile needs to be configured"; exit 1; fi
 if ! grep mfa_serial ~/.aws/credentials ~/.aws/config > /dev/null; then error "At least one profile needs to be configured with MFA"; exit 1; fi
 

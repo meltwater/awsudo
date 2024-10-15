@@ -45,13 +45,19 @@
   },
   "homepage": "https://github.com/meltwater/awsudo#readme",
   "dependencies": {
-    "aws-sdk": "2.1488.0",
+    "@aws-sdk/client-sts": "3.670.0",
+    "@aws-sdk/shared-ini-file-loader": "3.374.0",
+    "@smithy/shared-ini-file-loader": "3.1.8",
     "yargs": "17.7.2"
   },
   "devDependencies": {
-    "eslint": "8.52.0",
-    "jasmine": "5.1.0",
+    "@eslint/js": "9.12.0",
+    "eslint": "9.12.0",
+    "eslint-plugin-depend": "0.11.0",
+    "eslint-plugin-jsdoc": "50.4.1",
+    "globals": "15.11.0",
+    "jasmine": "5.4.0",
     "mustache": "4.2.0",
-    "nodemon": "3.0.1"
+    "nodemon": "3.1.7"
   }
 }

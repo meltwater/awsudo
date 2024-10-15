@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 
-const AWS = require("aws-sdk");
-const { execSync } = require("child_process");
+const {
+    AssumeRoleCommand,
+    STSClient
+} = require('@aws-sdk/client-sts');
+const { execSync } = require('child_process');
 const { cleanAwsCredentialsCache } = require('./clean-aws-credentials-cache');
 const { getProfileList } = require('./get-profile-list');
 const { getProfileOptionsValues } = require('./get-profile-options-values');
@@ -43,7 +46,7 @@ const EXIT_CODE = {
     OPTIONS_MISSING_COMMAND: 14,
     OPTIONS_MISSING_ROLE_ARN_AND_PROFILE: 13,
 
-    ASSUME_UNKNOWN: 20,
+    ASSUME_UNKNOWN: 20
 };
 
 function extractPositionalOptions (positionals) {
@@ -56,89 +59,95 @@ function extractPositionalOptions (positionals) {
     };
 }
 
-const yargsv = require("yargs")(process.argv.slice(2))
+const yargsv = require('yargs')(process.argv.slice(2))
     .usage(
-        "$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] [arn] [command..]",
-        "Assume an IAM role for the duration of a command",
+        '$0 [-d|--duration] [-p|--profile] [-n|--session-name] [-e|--external-id] [-v|--verbose] [-m|--mfa-token-arn] [-t|--mfa-token] [arn] [command..]',
+        'Assume an IAM role for the duration of a command',
         yargs => {
             yargs
                 .parserConfiguration({
                     'halt-at-non-option': true
                 })
-                .option("d", {
-                    alias: "duration",
+                .option('d', {
+                    alias: 'duration',
                     describe:
-                        "The duration to assume this role in seconds. See https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html#API_AssumeRole_RequestParameters",
+                        'The duration to assume this role in seconds. See https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html#API_AssumeRole_RequestParameters',
                     default: DEFAULT_DURATION,
-                    type: "number"
+                    type: 'number'
                 })
-                .option("p", {
-                    alias: "profile",
-                    describe: "The profile used to assume the role. Any profile values will override default values. Any explicit options will override profile values.",
-                    default: DEFAULT_PROFILE,
-                    choices: [DEFAULT_PROFILE, ...getProfileList()]
+                .option('p', {
+                    alias: 'profile',
+                    describe: 'The profile used to assume the role. Any profile values will override default values. Any explicit options will override profile values.',
+                    default: DEFAULT_PROFILE
                 })
-                .option("n", {
-                    alias: "session-name",
-                    describe: "The role session name to use",
+                .option('n', {
+                    alias: 'session-name',
+                    describe: 'The role session name to use',
                     default: DEFAULT_SESSION_NAME,
-                    type: "string"
+                    type: 'string'
                 })
-                .option("e", {
-                    alias: "external-id",
-                    describe: "The external id string used to authenticate role assumption",
+                .option('e', {
+                    alias: 'external-id',
+                    describe: 'The external id string used to authenticate role assumption',
                     default: DEFAULT_EXTERNAL_ID,
-                    type: "string"
+                    type: 'string'
                 })
-                .option("v", {
-                    alias: "verbose",
-                    describe: "Show debug information",
+                .option('v', {
+                    alias: 'verbose',
+                    describe: 'Show debug information',
                     default: DEFAULT_VERBOSE_VALUE,
-                    type: "boolean"
+                    type: 'boolean'
                 })
-                .option("t", {
-                    alias: "mfa-token",
-                    describe: "Current MFA token [Must also supply mfa-token-arn]",
+                .option('t', {
+                    alias: 'mfa-token',
+                    describe: 'Current MFA token [Must also supply mfa-token-arn]',
                     default: DEFAULT_MFA_TOKEN,
-                    type: "string"
+                    type: 'string'
                 })
-                .option("m", {
-                    alias: "mfa-token-arn",
-                    describe: "ARN for users MFA [Must also supply mfa-token]",
+                .option('m', {
+                    alias: 'mfa-token-arn',
+                    describe: 'ARN for users MFA [Must also supply mfa-token]',
                     default: DEFAULT_MFA_TOKEN_ARN,
-                    type: "string"
+                    type: 'string'
                 })
                 .options('preserve-credentials-cache', {
-                    describe: "Retain the AWS credentials cache folder when command is complete; otherwise remove it",
+                    describe: 'Retain the AWS credentials cache folder when command is complete; otherwise remove it',
                     default: DEFAULT_PRESERVE_CREDENTIALS_CACHE,
-                    type: "boolean"
+                    type: 'boolean'
                 })
-                .positional("arn", {
+                .positional('arn', {
                     default: DEFAULT_ROLE_ARN,
-                    describe: "ARN to assume",
-                    type: "string"
+                    describe: 'ARN to assume',
+                    type: 'string'
                 })
-                .positional("command", {
-                    describe: "Command to run",
-                    type: "array"
+                .positional('command', {
+                    describe: 'Command to run',
+                    type: 'array'
                 })
-                .help("h");
+                .help('h');
         }
     ).argv;
 
 let options;
 (async () => {
     const isWin32 = isWindows();
+    const profileList = await getProfileList();
+    if (yargsv.profile !== NO_PROFILE && !profileList.includes(yargsv.profile)) {
+        console.error(`Profile ${yargsv.profile} not found in AWS configuration`);
+        process.exit(EXIT_CODE.OPTIONS_UNKNOWN);
+    }
     const specifiedOptions = removeObjectEntries(yargsv, {
-            duration: DEFAULT_DURATION,
-            externalId: DEFAULT_EXTERNAL_ID,
-            mfaToken: DEFAULT_MFA_TOKEN,
-            mfaTokenArn: DEFAULT_MFA_TOKEN_ARN,
-            sessionName: DEFAULT_SESSION_NAME,
-            verbose: DEFAULT_VERBOSE_VALUE
+        duration: DEFAULT_DURATION,
+        externalId: DEFAULT_EXTERNAL_ID,
+        mfaToken: DEFAULT_MFA_TOKEN,
+        mfaTokenArn: DEFAULT_MFA_TOKEN_ARN,
+        sessionName: DEFAULT_SESSION_NAME,
+        verbose: DEFAULT_VERBOSE_VALUE
     });
     const positionalOptions = removeObjectEntries(extractPositionalOptions(yargsv._), { roleArn: NO_ROLE_ARN });
-    const profileOptionsValues = yargsv.profile !== NO_PROFILE ? getProfileOptionsValues(yargsv.profile) : {};
+    const profileOptionsValues = yargsv.profile !== NO_PROFILE
+        ? await getProfileOptionsValues(yargsv.profile)
+        : {};
 
     try {
         options = new Options({
@@ -209,21 +218,20 @@ let options;
 
     let awsEnvironmentSetCommands;
     try {
-        const sts = new AWS.STS(stsOptions);
+        const sts = new STSClient(stsOptions);
         const data = await sts
-            .assumeRole(assumeRoleParameters)
-            .promise();
+            .send(new AssumeRoleCommand(assumeRoleParameters));
         const credentials = data.Credentials;
 
         awsEnvironmentSetCommands = [
-            ["AWS_ACCESS_KEY_ID", credentials.AccessKeyId],
-            ["AWS_SECRET_ACCESS_KEY", credentials.SecretAccessKey],
-            ["AWS_SESSION_TOKEN", credentials.SessionToken],
-            ["AWS_EXPIRATION", credentials.Expiration.toISOString()]
+            ['AWS_ACCESS_KEY_ID', credentials.AccessKeyId],
+            ['AWS_SECRET_ACCESS_KEY', credentials.SecretAccessKey],
+            ['AWS_SESSION_TOKEN', credentials.SessionToken],
+            ['AWS_EXPIRATION', credentials.Expiration.toISOString()]
         ]
-        .map(arr => arr.join("="));
+            .map(arr => arr.join('='));
     } catch (err) {
-        console.log("Exception while assuming role:", err);
+        console.log('Exception while assuming role:', err);
         process.exit(EXIT_CODE.ASSUME_UNKNOWN);
     }
 
@@ -231,20 +239,20 @@ let options;
     if (isWin32) {
         command = awsEnvironmentSetCommands
             .map((arr) => `SET "${arr}"`)
-            .concat(options.command.join(" "))
-            .join(" & ");
+            .concat(options.command.join(' '))
+            .join(' & ');
     }
     else {
         command = awsEnvironmentSetCommands
             .concat(options.command)
-            .join(" ");
+            .join(' ');
     }
 
     if (options.verbose) {
         console.log(`Running command ${command}`);
     }
 
-    execSync(command, { stdio: "inherit" });
+    execSync(command, { stdio: 'inherit' });
 
     if (!options.preserveCredentialsCache) {
         cleanAwsCredentialsCache({ isWindows: isWin32 });
@@ -252,7 +260,7 @@ let options;
 })().catch(err => {
     if (yargsv.verbose) {
         const maskedError = err.toString().replace(/(AWS_\w+?=)(\S+)/g, '$1XXXXXXXXXXXXXXXXXXXX');
-        console.log("Caught runtime exception:", maskedError);
+        console.log('Caught runtime exception:', maskedError);
     }
 
     process.exit(EXIT_CODE.UNKNOWN);
