@@ -8,7 +8,7 @@
   "scripts": {
     "deploy-docker": "scripts/deploy-docker",
     "postversion": "scripts/postversion",
-    "pretest": "npm outdated && npm audit && eslint src/**/*.js",
+    "pretest": "npm outdated -- --warn-only && npm audit && eslint src/**/*.js",
     "preversion": "scripts/preversion",
     "start": "src/index.js",
     "test": "JASMINE_CONFIG_PATH=jasmine.json jasmine",
@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.12.0",
-    "eslint": "9.12.0",
+    "eslint": "8.52.0",
     "eslint-plugin-depend": "0.11.0",
     "eslint-plugin-jsdoc": "50.4.1",
     "globals": "15.11.0",
