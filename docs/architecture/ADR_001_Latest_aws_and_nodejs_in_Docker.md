@@ -22,11 +22,11 @@ Docker images are often the basis of other images which rely on OS features (e.g
 * Docker images are tagged to specify
     * awsudo version
     * nodejs version (by LTS codename)
-    * Ex: `:v1.7.2-gallium`
+    * Ex: `:v1.7.2-iron`
 * Unspecified tag values "slide" to the latest version
      * Ex: these tags would be equivalent:
          * `:v1.7.2`
-         * `:gallium`
+         * `:iron`
          * `:latest`
 * Docker images are produced for every nodejs version until their [end-of-life][nodejs releases]
 * The most recent `aws` version (at build time) is included
