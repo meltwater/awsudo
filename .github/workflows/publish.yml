@@ -71,3 +71,4 @@ jobs:
         run: |
           sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           sudo scripts/deploy-docker
+          sudo docker logout
