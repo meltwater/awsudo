@@ -1,6 +1,6 @@
 # awsudo
 
-[![Build Status](https://cloud.drone.io/api/badges/meltwater/awsudo/status.svg)](https://cloud.drone.io/meltwater/awsudo)
+[![Node.js CI test](https://github.com/meltwater/awsudo/actions/workflows/nodejs.yml/badge.svg?branch=master)](https://github.com/meltwater/awsudo/actions/workflows/nodejs.yml)
 
 A simple utility for easily executing AWS cli commands with an assumed role.
 
@@ -193,7 +193,7 @@ deploy into AWS:
 
 ```yaml
 deploy:
-  image: awsudo/awsudo:gallium
+  image: awsudo/awsudo:iron
   commands:
     # Copy build artifacts to publicly-readable S3 bucket
     - awsudo arn:aws:iam::${AWS_ACCOUNT_ID}:role/S3Access aws s3 cp ./build s3://some-bucket --acl public-read --recursive

@@ -4,7 +4,7 @@
  *
  * @param {object} baseObject - The object to base the return value on
  * @param {object} entries - An object of entries to remove
- * @return {object} - A copy of `baseObject` stripped of properties matching `entries`
+ * @returns {object} - A copy of `baseObject` stripped of properties matching `entries`
  */
 function removeObjectEntries (baseObject, entries) {
     return Object.fromEntries(Object.entries(baseObject)

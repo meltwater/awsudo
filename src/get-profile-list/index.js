@@ -1,8 +1,9 @@
-const AWS = require('aws-sdk');
+const { loadProfilesFromConfig } = require('../load-profiles-from-config');
 
-function getProfileList () {
+async function getProfileList () {
     try {
-        return Object.keys(AWS.util.getProfilesFromSharedConfig(AWS.util.iniLoader));
+        const profiles = await loadProfilesFromConfig();
+        return Object.keys(profiles);
     }
     catch (__error) {
         return [];

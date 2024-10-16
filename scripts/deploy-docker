@@ -14,7 +14,7 @@ echo "Deploying: awsudo/awsudo"
 LATEST_NODE_LTS=iron
 
 echo "Publishing tags specific to node LTS releases..."
-for NODE_LTS in "gallium" "hydrogen" "iron"; do
+for NODE_LTS in "hydrogen" "iron"; do
     docker build --build-arg node_lts="$NODE_LTS" --build-arg version="$VERSION" . \
         -t awsudo/awsudo:"$NODE_LTS" \
         -t awsudo/awsudo:v"${VERSION}"-"$NODE_LTS"
