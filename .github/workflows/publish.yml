@@ -35,7 +35,11 @@ jobs:
         run: npm publish
 
       - name: Build package
-        run: scripts/build-packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ruby-dev build-essential rpm
+          sudo gem install fpm
+          sudo scripts/build-packages
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
