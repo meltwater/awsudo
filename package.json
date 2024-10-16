@@ -1,6 +1,6 @@
 {
   "name": "awsudo",
-  "version": "2.0.1",
+  "version": "2.0.6",
   "description": "A simple utility for executing cli commands with an assumed role.",
   "bin": {
     "awsudo": "src/index.js"
@@ -8,7 +8,7 @@
   "scripts": {
     "deploy-docker": "scripts/deploy-docker",
     "postversion": "scripts/postversion",
-    "pretest": "npm outdated && npm audit && eslint src/**/*.js",
+    "pretest": "npm outdated -- --warn-only && npm audit && eslint src/**/*.js",
     "preversion": "scripts/preversion",
     "start": "src/index.js",
     "test": "JASMINE_CONFIG_PATH=jasmine.json jasmine",

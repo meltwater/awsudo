@@ -14,6 +14,12 @@ describe('Getting profile options values', () => {
         getProfileOptionsValues = require('./index').getProfileOptionsValues;
     });
 
+    afterEach(() => {
+        LoadProfilesFromConfigModule.loadProfilesFromConfig.and.returnValue({
+            [profile]: {}
+        });
+    });
+
     it('should get profile from shared config with the default iniLoader', async () => {
         await getProfileOptionsValues(profile);
 
