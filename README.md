@@ -1,6 +1,6 @@
 # awsudo
 
-[![Build Status](https://cloud.drone.io/api/badges/meltwater/awsudo/status.svg)](https://cloud.drone.io/meltwater/awsudo)
+[![Node.js CI test](https://github.com/meltwater/awsudo/actions/workflows/nodejs.yml/badge.svg?branch=master)](https://github.com/meltwater/awsudo/actions/workflows/nodejs.yml)
 
 A simple utility for easily executing AWS cli commands with an assumed role.
 
