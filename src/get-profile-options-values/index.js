@@ -20,7 +20,7 @@ function getProfileOptionsValues (profile) {
 
         return removeObjectEntries(profileOptions, UNDEFINED_PROFILE_OPTIONS);
     }
-    catch (error) {
+    catch (__error) {
         return {};
     }
 }
